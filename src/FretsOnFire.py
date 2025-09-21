@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 # -*- coding: iso-8859-1 -*-
 #####################################################################
 # Frets on Fire                                                     #
@@ -23,8 +23,11 @@
 """
 Main game executable.
 """
-import sys
+import argparse
+import codecs
 import os
+import sys
+from pathlib import Path
 
 # This trickery is needed to get OpenGL 3.x working with py2exe
 if hasattr(sys, "frozen") and os.name == "nt":
@@ -34,7 +37,6 @@ if hasattr(sys, "frozen") and os.name == "nt":
   sys.path.insert(0, "data/setuptools-0.6c8-py2.5.egg")
 
 # Register the latin-1 encoding
-import codecs
 import encodings.iso8859_1
 import encodings.utf_8
 codecs.register(lambda encoding: encodings.iso8859_1.getregentry())
@@ -47,69 +49,77 @@ from MainMenu import MainMenu
 import Log
 import Config
 import Version
-import getopt
 
-usage = """%(prog)s [options]
-Options:
-  --verbose, -v         Verbose messages
-  --play, -p [songName] Start playing the given song
-""" % {"prog": sys.argv[0] }
+def parse_args(argv):
+  parser = argparse.ArgumentParser(
+    prog=Path(sys.argv[0]).name,
+    add_help=True,
+    description="Launch Frets on Fire",
+  )
+  parser.add_argument(
+    "-v", "--verbose",
+    action="store_true",
+    help="Verbose messages",
+  )
+  parser.add_argument(
+    "-p", "--play",
+    dest="song_name",
+    metavar="songName",
+    help="Start playing the given song",
+  )
+  return parser.parse_args(argv)
 
-if __name__ == "__main__":
+def main(argv=None):
+  argv = list(sys.argv[1:] if argv is None else argv)
+  args = parse_args(argv)
+
+  if args.verbose:
+    Log.quiet = False
+
+  song_name = args.song_name
+  engine = None
+
   try:
-    opts, args = getopt.getopt(sys.argv[1:], "vp:", ["verbose", "play="])
-  except getopt.GetoptError:
-    print usage
-    sys.exit(1)
-
-  songName = None
-  for opt, arg in opts:
-    if opt in ["--verbose", "-v"]:
-      Log.quiet = False
-    elif opt in ["--play", "-p"]:
-      songName = arg
-
-  while True:
-    config = Config.load(Version.appName() + ".ini", setAsDefault = True)
-    engine = GameEngine(config)
-    menu   = MainMenu(engine, songName = songName)
-    engine.setStartupLayer(menu)
-
-    try:
-      import psyco
-      psyco.profile()
-    except:
-      Log.warn("Unable to enable psyco.")
-
-    try:
-      while engine.run():
-        pass
-    except KeyboardInterrupt:
-        pass
-
-    if engine.restartRequested:
-      Log.notice("Restarting.")
+    while True:
+      config = Config.load(Version.appName() + ".ini", setAsDefault = True)
+      engine = GameEngine(config)
+      menu   = MainMenu(engine, songName = song_name)
+      engine.setStartupLayer(menu)
 
       try:
-        # Determine whether were running from an exe or not
-        if hasattr(sys, "frozen"):
-          if os.name == "nt":
-            os.execl("FretsOnFire.exe", "FretsOnFire.exe", *sys.argv[1:])
-          elif sys.platform == "darwin":
-            # This exit code tells the launcher script to restart the game
-            sys.exit(100)
+        while engine.run():
+          pass
+      except KeyboardInterrupt:
+          pass
+
+      if engine.restartRequested:
+        Log.notice("Restarting.")
+
+        try:
+          # Determine whether we're running from an exe or not
+          if hasattr(sys, "frozen"):
+            if os.name == "nt":
+              os.execl("FretsOnFire.exe", "FretsOnFire.exe", *sys.argv[1:])
+            elif sys.platform == "darwin":
+              # This exit code tells the launcher script to restart the game
+              sys.exit(100)
+            else:
+              os.execl("./FretsOnFire", "./FretsOnFire", *sys.argv[1:])
           else:
-            os.execl("./FretsOnFire", "./FretsOnFire", *sys.argv[1:])
-        else:
-          if os.name == "nt":
-            bin = "c:/python25/python"
-          else:
-            bin = "/usr/bin/python"
-          os.execl(bin, bin, "FretsOnFire.py", *sys.argv[1:])
-      except:
-        Log.warn("Restart failed.")
-        raise
-      break
-    else:
-      break
-  engine.quit()
+            python_executable = sys.executable or "python3"
+            script_path = Path(__file__).resolve()
+            os.execl(python_executable, python_executable, str(script_path), *argv)
+        except Exception as exc:
+          Log.warn("Restart failed: %s" % exc)
+          raise
+        break
+      else:
+        break
+  finally:
+    if engine is not None:
+      engine.quit()
+
+  return 0
+
+if __name__ == "__main__":
+  sys.exit(main())

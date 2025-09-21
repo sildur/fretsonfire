@@ -141,7 +141,7 @@ class Font:
       if len(text) > 5:
         # Limit the cache size
         if len(self.stringCache) > self.stringCacheLimit:
-          del self.stringCache[self.stringCache.keys()[0]]
+          del self.stringCache[list(self.stringCache.keys())[0]]
         self.stringCache[(text, scale)] = cacheEntry
     else:
       cacheEntry = self.stringCache[(text, scale)]
@@ -206,7 +206,7 @@ class Font:
 
       # Draw outlines
       """
-      import Image, ImageFilter
+      from PIL import Image, ImageFilter
       srcImg = Image.fromstring("RGBA", s.get_size(), pygame.image.tostring(s, "RGBA"))
       img    = Image.fromstring("RGBA", s.get_size(), pygame.image.tostring(s, "RGBA"))
       for y in xrange(img.size[1]):

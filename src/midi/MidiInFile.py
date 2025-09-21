@@ -1,7 +1,7 @@
 # -*- coding: ISO-8859-1 -*-
 
-from RawInstreamFile import RawInstreamFile
-from MidiFileParser import MidiFileParser
+from .RawInstreamFile import RawInstreamFile
+from .MidiFileParser import MidiFileParser
 
 
 class MidiInFile:
@@ -48,8 +48,8 @@ class MidiInFile:
         p.parseMTrkChunks()
 
 
-    def setData(self, data=''):
-        "Sets the data from a plain string"
+    def setData(self, data=b''):
+        "Sets the data from a bytes object"
         self.raw_in.setData(data)
     
     

@@ -1,10 +1,10 @@
 # -*- coding: ISO-8859-1 -*-
 
-from MidiOutStream import MidiOutStream
-from RawOutstreamFile import RawOutstreamFile
+from .MidiOutStream import MidiOutStream
+from .RawOutstreamFile import RawOutstreamFile
 
-from constants import *
-from DataTypeConverters import fromBytes, writeVar
+from .constants import *
+from .DataTypeConverters import fromBytes, writeVar
 
 class MidiOutFile(MidiOutStream):
 
@@ -128,7 +128,12 @@ class MidiOutFile(MidiOutStream):
         data: list of values in range(128)
         """
         sysex_len = writeVar(len(data)+1)
-        self.event_slice(chr(SYSTEM_EXCLUSIVE) + sysex_len + data + chr(END_OFF_EXCLUSIVE))
+        if isinstance(data, str):
+            data = data.encode('iso-8859-1')
+        else:
+            data = bytes(data)
+        payload = bytes([SYSTEM_EXCLUSIVE]) + sysex_len + data + bytes([END_OFF_EXCLUSIVE])
+        self.event_slice(payload)
 
 
     #####################
@@ -166,7 +171,7 @@ class MidiOutFile(MidiOutStream):
         """
         No values passed
         """
-        self.event_slice(chr(TUNING_REQUEST))
+        self.event_slice(bytes([TUNING_REQUEST]))
 
             
     #########################
@@ -181,7 +186,7 @@ class MidiOutFile(MidiOutStream):
         
         """        
         raw = self.raw_out
-        raw.writeSlice('MThd')
+        raw.writeSlice(b'MThd')
         bew = raw.writeBew
         bew(6, 4) # header size
         bew(format, 2)
@@ -204,8 +209,10 @@ class MidiOutFile(MidiOutStream):
 
     def meta_slice(self, meta_type, data_slice):
         "Writes a meta event"
+        if isinstance(data_slice, str):
+            data_slice = data_slice.encode('iso-8859-1')
         slc = fromBytes([META_EVENT, meta_type]) + \
-                         writeVar(len(data_slice)) +  data_slice
+                         writeVar(len(data_slice)) + data_slice
         self.event_slice(slc)
 
 
@@ -246,7 +253,7 @@ class MidiOutFile(MidiOutStream):
         """
         value: 0-65535
         """
-        self.meta_slice(meta_type, writeBew(value, 2))
+        self.meta_slice(SEQUENCE_NUMBER, writeBew(value, 2))
 
 
     def text(self, text):
@@ -312,7 +319,7 @@ class MidiOutFile(MidiOutStream):
         channel: midi channel for subsequent data
         (deprecated in the spec)
         """
-        self.meta_slice(MIDI_CH_PREFIX, chr(channel))
+        self.meta_slice(MIDI_CH_PREFIX, bytes([channel & 0x7F]))
 
 
     def midi_port(self, value):
@@ -320,7 +327,7 @@ class MidiOutFile(MidiOutStream):
         """
         value: Midi port (deprecated in the spec)
         """
-        self.meta_slice(MIDI_CH_PREFIX, chr(value))
+        self.meta_slice(MIDI_CH_PREFIX, bytes([value & 0x7F]))
 
 
     def tempo(self, value):

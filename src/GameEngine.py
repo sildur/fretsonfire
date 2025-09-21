@@ -113,7 +113,10 @@ class SystemEventHandler(SystemEventListener):
     self.engine.restart()
     
   def quit(self):
+    self.engine.shuttingDown = True
     self.engine.quit()
+    pygame.quit()
+    sys.exit(0)
 
 class GameEngine(Engine):
   """The main game engine."""
@@ -123,6 +126,8 @@ class GameEngine(Engine):
 
     @param config:  L{Config} instance for settings
     """
+
+    self.shuttingDown = False
 
     if not config:
       config = Config.load()
@@ -251,6 +256,7 @@ class GameEngine(Engine):
         Engine.quit(self)
     
   def quit(self):
+    self.shuttingDown = True
     self.audio.close()
     Engine.quit(self)
 
@@ -362,7 +368,7 @@ class GameEngine(Engine):
       sys.exit(0)
     except SystemExit:
       sys.exit(0)
-    except Exception, e:
+    except Exception as e:
       def clearMatrixStack(stack):
         try:
           glMatrixMode(stack)
@@ -383,6 +389,6 @@ class GameEngine(Engine):
       clearMatrixStack(GL_PROJECTION)
       clearMatrixStack(GL_MODELVIEW)
       
-      Dialogs.showMessage(self, unicode(e))
+      Dialogs.showMessage(self, str(e))
       self.handlingException = False
       return True

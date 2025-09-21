@@ -25,8 +25,8 @@ import os
 import Resource
 
 quiet = True
-logFile = open(os.path.join(Resource.getWritableResourcePath(), "fretsonfire.log"), "w")
 encoding = "iso-8859-1"
+logFile = open(os.path.join(Resource.getWritableResourcePath(), "fretsonfire.log"), "w", encoding=encoding)
 
 if "-v" in sys.argv:
   quiet = False
@@ -47,10 +47,10 @@ else:
   }
 
 def log(cls, msg):
-  msg = unicode(msg).encode(encoding, "ignore")
+  msg = str(msg)
   if not quiet:
-    print labels[cls] + " " + msg
-  print >>logFile, labels[cls] + " " + msg
+    print(labels[cls] + " " + msg)
+  logFile.write(labels[cls] + " " + msg + "\n")
 
 warn   = lambda msg: log("warn", msg)
 debug  = lambda msg: log("debug", msg)

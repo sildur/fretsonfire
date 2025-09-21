@@ -32,7 +32,7 @@ class Mesh:
     self.fullGeoms = {}
     
   def _unflatten(self, array, stride):
-    return [tuple(array[i * stride : (i + 1) * stride]) for i in range(len(array) / stride)]
+    return [tuple(array[i * stride : (i + 1) * stride]) for i in range(len(array) // stride)]
 
   def setupLight(self, light, n, pos):
     l = light.techniqueCommon

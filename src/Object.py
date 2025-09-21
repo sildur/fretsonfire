@@ -21,7 +21,7 @@
 #####################################################################
 
 import pickle
-from StringIO import StringIO
+from io import BytesIO
 
 class Serializer(pickle.Pickler):
   def persistent_id(self, obj):
@@ -36,12 +36,12 @@ class Unserializer(pickle.Unpickler):
     return self.manager.getObject(id)
 
 def serialize(data):
-  file = StringIO()
+  file = BytesIO()
   Serializer(file, protocol = 2).dump(data)
   return file.getvalue()
 
 def unserialize(manager, data):
-  return Unserializer(manager, StringIO(data)).load()
+  return Unserializer(manager, BytesIO(data)).load()
 
 class Manager:
   MSG_CREATE = 0
@@ -117,8 +117,8 @@ class Manager:
           id = data
           del self.__creationData[id]
           del self.objects[id]
-      except Exception, e:
-        print "Exception %s while processing incoming changes from manager %s." % (str(e), managerId)
+      except Exception as e:
+        print("Exception %s while processing incoming changes from manager %s." % (str(e), managerId))
         raise
 
 def enableGlobalManager():

@@ -25,6 +25,37 @@ import Config
 import Song
 from Language import _
 
+# Map legacy SDL 1.x key codes to their SDL 2 equivalents so that
+# old configuration files keep working (notably affects function keys).
+LEGACY_KEY_MAP = {
+  273: pygame.K_UP,
+  274: pygame.K_DOWN,
+  275: pygame.K_RIGHT,
+  276: pygame.K_LEFT,
+  282: pygame.K_F1,
+  283: pygame.K_F2,
+  284: pygame.K_F3,
+  285: pygame.K_F4,
+  286: pygame.K_F5,
+  287: pygame.K_F6,
+  288: pygame.K_F7,
+  289: pygame.K_F8,
+  290: pygame.K_F9,
+  291: pygame.K_F10,
+  292: pygame.K_F11,
+  293: pygame.K_F12,
+  294: pygame.K_F13,
+  295: pygame.K_F14,
+  296: pygame.K_F15,
+  303: pygame.K_RSHIFT,
+  304: pygame.K_LSHIFT,
+  305: pygame.K_RCTRL,
+  306: pygame.K_LCTRL,
+  307: pygame.K_RALT,
+  308: pygame.K_LALT,
+}
+
+
 LEFT    = 0x1
 RIGHT   = 0x2
 UP      = 0x4
@@ -61,9 +92,11 @@ class Controls:
     def keycode(name):
       k = Config.get("player", name)
       try:
-        return int(k)
-      except:
+        value = int(k)
+      except (TypeError, ValueError):
         return getattr(pygame, k)
+      else:
+        return LEGACY_KEY_MAP.get(value, value)
     
     self.flags = 0
     self.controlMapping = {

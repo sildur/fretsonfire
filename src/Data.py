@@ -31,12 +31,12 @@ import Language
 import Config
 
 # these constants define a few customized letters in the default font
-STAR1 = unicode('\x10')
-STAR2 = unicode('\x11')
-LEFT  = unicode('\x12')
-RIGHT = unicode('\x13')
-BALL1 = unicode('\x14')
-BALL2 = unicode('\x15')
+STAR1 = '\x10'
+STAR2 = '\x11'
+LEFT  = '\x12'
+RIGHT = '\x13'
+BALL1 = '\x14'
+BALL2 = '\x15'
 
 class Data(object):
   """A collection of globally used data resources such as fonts and sound effects."""

@@ -20,7 +20,7 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 import Log
 import Resource
 import os
@@ -80,7 +80,7 @@ class Config:
       if not os.path.isfile(fileName):
         path = Resource.getWritableResourcePath()
         fileName = os.path.join(path, fileName)
-      self.config.read(fileName)
+      self.config.read(fileName, encoding=encoding)
   
     self.fileName  = fileName
   
@@ -138,14 +138,11 @@ class Config:
     if not self.config.has_section(section):
       self.config.add_section(section)
 
-    if type(value) == unicode:
-      value = value.encode(encoding)
-    else:
-      value = str(value)
+    value = str(value)
 
     self.config.set(section, option, value)
     
-    f = open(self.fileName, "w")
+    f = open(self.fileName, "w", encoding=encoding)
     self.config.write(f)
     f.close()
 

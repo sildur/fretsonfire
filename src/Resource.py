@@ -21,7 +21,7 @@
 #####################################################################
 
 import os
-from Queue import Queue, Empty
+from queue import Queue, Empty
 from threading import Thread, BoundedSemaphore
 import time
 import shutil
@@ -78,7 +78,10 @@ class Loader(Thread):
     Log.notice("Loaded %s.%s in %.3f seconds" % (self.target.__class__.__name__, self.name, self.time))
     
     if self.exception:
-      raise self.exception[0], self.exception[1], self.exception[2]
+      exc_type, exc_value, exc_traceback = self.exception
+      if exc_value is None:
+        exc_value = exc_type()
+      raise exc_value.with_traceback(exc_traceback)
     if self.target and self.name:
       setattr(self.target, self.name, self.result)
     if self.onLoad:

@@ -40,7 +40,7 @@ def getAvailableMods(engine):
   modPath = _getModPath(engine)
   try:
     dirList = os.listdir(modPath)
-  except OSError, e:
+  except OSError:
     import Log
     Log.warn("Could not find mods directory")
     return []

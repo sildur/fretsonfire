@@ -2,7 +2,7 @@
 # -*- coding: iso-8859-1 -*-                                        #
 #                                                                   #
 # Frets on Fire                                                     #
-# Copyright (C) 2006 Sami Kyöstilä                                  #
+# Copyright (C) 2006 Sami Ky?stil?                                  #
 #                                                                   #
 # This program is free software; you can redistribute it and/or     #
 # modify it under the terms of the GNU General Public License       #
@@ -23,15 +23,16 @@
 import midi
 import Log
 import Audio
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 import os
 import re
 import shutil
 import Config
-import sha
+import hashlib
 import binascii
 import Cerealizer
-import urllib
+from urllib.parse import urlencode
+from urllib.request import urlopen
 import Version
 import Theme
 from Language import _
@@ -69,7 +70,7 @@ class SongInfo(object):
     self._difficulties = None
 
     try:
-      self.info.read(infoFileName)
+      self.info.read(infoFileName, encoding=Config.encoding)
     except:
       pass
       
@@ -79,7 +80,7 @@ class SongInfo(object):
     
     scores = self._get("scores", str, "")
     if scores:
-      scores = Cerealizer.loads(binascii.unhexlify(scores))
+      scores = Cerealizer.loads(binascii.unhexlify(scores.encode("ascii")))
       for difficulty in scores.keys():
         try:
           difficulty = difficulties[difficulty]
@@ -94,22 +95,19 @@ class SongInfo(object):
   def _set(self, attr, value):
     if not self.info.has_section("song"):
       self.info.add_section("song")
-    if type(value) == unicode:
-      value = value.encode(Config.encoding)
-    else:
-      value = str(value)
+    value = str(value)
     self.info.set("song", attr, value)
     
   def getObfuscatedScores(self):
     s = {}
     for difficulty in self.highScores.keys():
       s[difficulty.id] = [(score, stars, name, self.getScoreHash(difficulty, score, stars, name)) for score, stars, name in self.highScores[difficulty]]
-    return binascii.hexlify(Cerealizer.dumps(s))
+    return binascii.hexlify(Cerealizer.dumps(s)).decode("ascii")
 
   def save(self):
     self._set("scores", self.getObfuscatedScores())
     
-    f = open(self.fileName, "w")
+    f = open(self.fileName, "w", encoding=Config.encoding)
     self.info.write(f)
     f.close()
     
@@ -139,10 +137,10 @@ class SongInfo(object):
         midiIn.read()
       except MidiInfoReader.Done:
         pass
-      info.difficulties.sort(lambda a, b: cmp(b.id, a.id))
+      info.difficulties.sort(key=lambda difficulty: difficulty.id, reverse=True)
       self._difficulties = info.difficulties
     except:
-      self._difficulties = difficulties.values()
+      self._difficulties = list(difficulties.values())
     return self._difficulties
 
   def getName(self):
@@ -166,7 +164,8 @@ class SongInfo(object):
     self._set("artist", value)
     
   def getScoreHash(self, difficulty, score, stars, name):
-    return sha.sha("%d%d%d%s" % (difficulty.id, score, stars, name)).hexdigest()
+    payload = f"{difficulty.id}{score}{stars}{name}"
+    return hashlib.sha1(payload.encode(Config.encoding)).hexdigest()
     
   def getDelay(self):
     return self._get("delay", int, 0)
@@ -188,14 +187,14 @@ class SongInfo(object):
         "scores":   self.getObfuscatedScores(),
         "version":  Version.version()
       }
-      data = urllib.urlopen(url + "?" + urllib.urlencode(d)).read()
+      data = urlopen(url + "?" + urlencode(d)).read().decode("utf-8", "ignore")
       Log.debug("Score upload result: %s" % data)
       if ";" in data:
         fields = data.split(";")
       else:
         fields = [data, "0"]
       return (fields[0] == "True", int(fields[1]))
-    except Exception, e:
+    except Exception as e:
       Log.error(e)
       return (False, 0)
   
@@ -203,7 +202,7 @@ class SongInfo(object):
     if not difficulty in self.highScores:
       self.highScores[difficulty] = []
     self.highScores[difficulty].append((score, stars, name))
-    self.highScores[difficulty].sort(lambda a, b: {True: -1, False: 1}[a[0] > b[0]])
+    self.highScores[difficulty].sort(key=lambda entry: entry[0], reverse=True)
     self.highScores[difficulty] = self.highScores[difficulty][:5]
     for i, scores in enumerate(self.highScores[difficulty]):
       _score, _stars, _name = scores
@@ -229,7 +228,7 @@ class LibraryInfo(object):
     self.songCount     = 0
 
     try:
-      self.info.read(infoFileName)
+      self.info.read(infoFileName, encoding=Config.encoding)
     except:
       pass
 
@@ -248,14 +247,11 @@ class LibraryInfo(object):
   def _set(self, attr, value):
     if not self.info.has_section("library"):
       self.info.add_section("library")
-    if type(value) == unicode:
-      value = value.encode(Config.encoding)
-    else:
-      value = str(value)
+    value = str(value)
     self.info.set("library", attr, value)
     
   def save(self):
-    f = open(self.fileName, "w")
+    f = open(self.fileName, "w", encoding=Config.encoding)
     self.info.write(f)
     f.close()
     
@@ -458,13 +454,13 @@ class Song(object):
     try:
       if guitarTrackName:
         self.guitarTrack = Audio.StreamingSound(self.engine, self.engine.audio.getChannel(1), guitarTrackName)
-    except Exception, e:
+    except Exception as e:
       Log.warn("Unable to load guitar track: %s" % e)
 
     try:
       if rhythmTrackName:
         self.rhythmTrack = Audio.StreamingSound(self.engine, self.engine.audio.getChannel(2), rhythmTrackName)
-    except Exception, e:
+    except Exception as e:
       Log.warn("Unable to load rhythm track: %s" % e)
 	
     # load the notes
@@ -474,7 +470,7 @@ class Song(object):
 
     # load the script
     if scriptFileName and os.path.isfile(scriptFileName):
-      scriptReader = ScriptReader(self, open(scriptFileName))
+      scriptReader = ScriptReader(self, open(scriptFileName, encoding=Config.encoding))
       scriptReader.read()
 
     # update all note tracks
@@ -482,7 +478,7 @@ class Song(object):
       track.update()
 
   def getHash(self):
-    h = sha.new()
+    h = hashlib.sha1()
     f = open(self.noteFileName, "rb")
     bs = 1024
     while True:
@@ -629,9 +625,12 @@ class MidiWriter:
       self.out.tempo(int(60.0 * 10.0**6 / 122.0))
 
     # Collect all events
-    events = [zip([difficulty] * len(track.getAllEvents()), track.getAllEvents()) for difficulty, track in enumerate(self.song.tracks)]
-    events = reduce(lambda a, b: a + b, events)
-    events.sort(lambda a, b: {True: 1, False: -1}[a[1][0] > b[1][0]])
+    events = [
+      (difficulty, event)
+      for difficulty, track in enumerate(self.song.tracks)
+      for event in track.getAllEvents()
+    ]
+    events.sort(key=lambda item: item[1][0])
     heldNotes = []
 
     for difficulty, event in events:
@@ -650,7 +649,7 @@ class MidiWriter:
         self.out.update_time(time, relative = 0)
         self.out.note_on(0, note, event.special and 127 or 100)
         heldNotes.append((note, time + self.midiTime(event.length)))
-        heldNotes.sort(lambda a, b: {True: 1, False: -1}[a[1] > b[1]])
+        heldNotes.sort(key=lambda item: item[1])
 
     # Turn of any remaining notes
     for note, endTime in heldNotes:
@@ -668,9 +667,11 @@ class ScriptReader:
     self.file = scriptFile
 
   def read(self):
-    for line in self.file.xreadlines():
-      if line.startswith("#"): continue
-      time, length, type, data = re.split("[\t ]+", line.strip(), 3)
+    for raw_line in self.file:
+      line = raw_line.strip()
+      if not line or line.startswith("#"):
+        continue
+      time, length, type, data = re.split("[\t ]+", line, 3)
       time   = float(time)
       length = float(length)
 
@@ -870,7 +871,7 @@ def getAvailableLibraries(engine, library = DEFAULT_LIBRARY):
             libraries.append(LibraryInfo(libName, os.path.join(libraryRoot, "library.ini")))
             libraryRoots.append(libraryRoot)
             break
-  libraries.sort(lambda a, b: cmp(a.name, b.name))
+  libraries.sort(key=lambda library: library.name)
   return libraries
 
 def getAvailableSongs(engine, library = DEFAULT_LIBRARY, includeTutorials = False):
@@ -887,5 +888,5 @@ def getAvailableSongs(engine, library = DEFAULT_LIBRARY, includeTutorials = Fals
   songs = [SongInfo(engine.resource.fileName(library, name, "song.ini", writable = True)) for name in names]
   if not includeTutorials:
     songs = [song for song in songs if not song.tutorial]
-  songs.sort(lambda a, b: cmp(a.name, b.name))
+  songs.sort(key=lambda song: song.name)
   return songs

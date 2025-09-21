@@ -4,11 +4,11 @@
 from struct import unpack
 
 # custom
-from DataTypeConverters import readBew, readVar, varLen, toBytes
+from .DataTypeConverters import readBew, readVar, varLen, toBytes
 
 # uhh I don't really like this, but there are so many constants to 
 # import otherwise
-from constants import *
+from .constants import *
 
 
 class EventDispatcher:
@@ -132,7 +132,7 @@ class EventDispatcher:
 
         else:
 
-            raise ValueError, 'Illegal channel message!'
+            raise ValueError('Illegal channel message!')
 
 
 
@@ -175,7 +175,7 @@ class EventDispatcher:
 
         elif common_type == TUNING_REQUEST:
             # no data then
-            stream.tuning_request(time=None)
+            stream.tuning_request()
 
 
 
@@ -261,7 +261,7 @@ class EventDispatcher:
             try:
                 nn, dd, cc, bb = toBytes(data)
                 stream.time_signature(nn, dd, cc, bb)
-            except ValueError, e:
+            except ValueError:
                 pass
         
         # KEY_SIGNATURE = 0x59 (59 02 sf mi)
@@ -286,7 +286,7 @@ class EventDispatcher:
 if __name__ == '__main__':
 
 
-    from MidiToText import MidiToText
+    from .MidiToText import MidiToText
     
     outstream = MidiToText()
     dispatcher = EventDispatcher(outstream)

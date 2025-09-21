@@ -24,21 +24,13 @@ from __future__ import division
 
 import Log
 import Config
+from PIL import Image
 import pygame
-import StringIO
+from io import BytesIO
+from PIL import PngImagePlugin
 from OpenGL.GL import *
 from OpenGL.GLU import *
-from Queue import Queue, Empty
-
-try:
-  from PIL import Image
-except ImportError:
-  import Image
-
-try:
-  from PIL import PngImagePlugin
-except ImportError:
-  import PngImagePlugin
+from queue import Queue, Empty
 
 Config.define("opengl", "supportfbo", bool, False)
 
@@ -218,13 +210,13 @@ class Texture:
     """Load the texture from a PIL image"""
     image = image.transpose(Image.FLIP_TOP_BOTTOM)
     if image.mode == "RGBA":
-      string = image.tostring('raw', 'RGBA', 0, -1)
+      string = image.tobytes('raw', 'RGBA', 0, -1)
       self.loadRaw(image.size, string, GL_RGBA, 4)
     elif image.mode == "RGB":
-      string = image.tostring('raw', 'RGB', 0, -1)
+      string = image.tobytes('raw', 'RGB', 0, -1)
       self.loadRaw(image.size, string, GL_RGB, 3)
     elif image.mode == "L":
-      string = image.tostring('raw', 'L', 0, -1)
+      string = image.tobytes('raw', 'L', 0, -1)
       self.loadRaw(image.size, string, GL_LUMINANCE, 1)
     else:
       raise TextureException("Unsupported image mode '%s'" % image.mode)
@@ -262,16 +254,16 @@ class Texture:
     if monochrome:
       # pygame doesn't support monochrome, so the fastest way
       # appears to be using PIL to do the conversion.
-      string = pygame.image.tostring(surface, "RGB")
-      image = Image.fromstring("RGB", surface.get_size(), string).convert("L")
-      string = image.tostring('raw', 'L', 0, -1)
+      string = pygame.image.tobytes(surface, "RGB")
+      image = Image.frombytes("RGB", surface.get_size(), string).convert("L")
+      string = image.tobytes('raw', 'L', 0, -1)
       self.loadRaw(surface.get_size(), string, GL_LUMINANCE, GL_INTENSITY8)
     else:
       if alphaChannel:
-        string = pygame.image.tostring(surface, "RGBA", True)
+        string = pygame.image.tobytes(surface, "RGBA", True)
         self.loadRaw(surface.get_size(), string, GL_RGBA, 4)
       else:
-        string = pygame.image.tostring(surface, "RGB", True)
+        string = pygame.image.tobytes(surface, "RGB", True)
         self.loadRaw(surface.get_size(), string, GL_RGB, 3)
     self.size = (w / w2, h / h2)
 
@@ -281,16 +273,16 @@ class Texture:
     if monochrome:
       # pygame doesn't support monochrome, so the fastest way
       # appears to be using PIL to do the conversion.
-      string = pygame.image.tostring(surface, "RGB")
-      image = Image.fromstring("RGB", surface.get_size(), string).convert("L")
-      string = image.tostring('raw', 'L', 0, -1)
+      string = pygame.image.tobytes(surface, "RGB")
+      image = Image.frombytes("RGB", surface.get_size(), string).convert("L")
+      string = image.tobytes('raw', 'L', 0, -1)
       self.loadSubRaw(surface.get_size(), position, string, GL_INTENSITY8)
     else:
       if alphaChannel:
-        string = pygame.image.tostring(surface, "RGBA", True)
+        string = pygame.image.tobytes(surface, "RGBA", True)
         self.loadSubRaw(surface.get_size(), position, string, GL_RGBA)
       else:
-        string = pygame.image.tostring(surface, "RGB", True)
+        string = pygame.image.tobytes(surface, "RGB", True)
         self.loadSubRaw(surface.get_size(), position, string, GL_RGB)
 
   def loadRaw(self, size, string, format, components):

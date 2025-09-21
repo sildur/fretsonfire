@@ -69,5 +69,7 @@ class GameTask(Task, KeyListener, MessageHandler):
 
   def handleConnectionLost(self, sender):
     if self.session:
+      if getattr(self.engine, "shuttingDown", False):
+          return
       Dialogs.showMessage(self.engine, _("Connection lost."))
       self.quit()

@@ -43,9 +43,9 @@ if language:
     trFile = os.path.join(Version.dataPath(), "translations", "%s.mo" % language.lower().replace(" ", "_"))
     catalog = gettext.GNUTranslations(open(trFile, "rb"))
     def translate(m):
-      return catalog.gettext(m).decode("utf-8")
+      return catalog.gettext(m)
     _ = translate
-  except Exception, x:
+  except Exception as x:
     Log.warn("Unable to select language '%s': %s" % (language, x))
     language = None
 

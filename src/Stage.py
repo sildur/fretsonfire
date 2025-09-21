@@ -20,7 +20,7 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from OpenGL.GL import *
 import math
 import Log
@@ -225,13 +225,13 @@ class Stage(object):
   def __init__(self, guitarScene, configFileName):
     self.scene            = guitarScene
     self.engine           = guitarScene.engine
-    self.config           = ConfigParser()
+    self.config           = ConfigParser(interpolation=None)
     self.backgroundLayers = []
     self.foregroundLayers = []
     self.textures         = {}
     self.reset()
 
-    self.config.read(configFileName)
+    self.config.read(configFileName, encoding="iso-8859-1")
 
     # Build the layers
     for i in range(32):
