@@ -22,6 +22,8 @@
 
 import sys
 import os
+from importlib import resources
+from pathlib import Path
 VERSION = '1.3'
 
 def appName():
@@ -43,6 +45,14 @@ def dataPath():
     else:
       dataPath = "data"
   else:
-    dataPath = os.path.join("..", "data")
+    package_path = Path(__file__).resolve().parent
+    data_path = package_path / "data"
+    if data_path.exists():
+      return str(data_path)
+    try:
+      resource_path = resources.files(__package__).joinpath("data")
+      return os.fspath(resource_path)
+    except Exception:
+      return os.path.join(package_path, "data")
   return dataPath
   

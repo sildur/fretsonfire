@@ -1,0 +1,8 @@
+__pycache__
+/.venv/
+/.build-venv/
+/build/
+/dist/
+/src/fretsonfire.egg-info/
+/MANIFEST
+*mo

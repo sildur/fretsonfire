@@ -1,6 +1,5 @@
-recursive-include src *.py *.pot
-recursive-include data *.ttf *.png *.dae *.ogg *.txt *.ini *.sh *.mid *.mo *.po
+recursive-include src/fretsonfire *.py *.pot
+recursive-include src/fretsonfire/data *
 include Makefile
 include readme.txt copying.txt install.txt changelog.txt
-include MANIFEST.in MANIFEST
-
+include MANIFEST.in

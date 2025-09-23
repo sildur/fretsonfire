@@ -20,10 +20,17 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import sys 
+import sys
+from pathlib import Path
+
 sys.path.append("src")
+
 from setuptools import setup
-import sys, SceneFactory, Version, glob, os
+
+import glob
+import os
+
+from fretsonfire import SceneFactory, Version
 import distutils.command.sdist
 
 options = {
@@ -90,13 +97,16 @@ options = {
 try:
   dataFiles = []
   ignoreExts = [".po", ".py", ".pot"]
-  for line in open("MANIFEST").readlines():
+  manifest_path = Path("MANIFEST")
+  for line in manifest_path.read_text().splitlines():
     fn = line.strip()
-    if any([fn.endswith(e) for e in ignoreExts]): continue
-    if fn in ["Makefile", "MANIFEST", "MANIFEST.in"]: continue
+    if any(fn.endswith(e) for e in ignoreExts):
+      continue
+    if fn in ["Makefile", "MANIFEST", "MANIFEST.in"]:
+      continue
     dataFiles.append((os.path.dirname(fn), [fn]))
 except IOError:
-  print "Unable to open MANIFEST. Please run python setup.py sdist -o to generate it."
+  print("Unable to open MANIFEST. Please run python setup.py sdist -o to generate it.")
   dataFiles = []
 
 extraOpts = {}

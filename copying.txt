@@ -1,5 +1,5 @@
-All source code and data files are copyright 2006-2009 by Sami Kyˆstil‰,
-Tommi Inkil‰, Joonas Kerttula, except:
+All source code and data files are copyright 2006-2009 by Sami Ky√∂stil√§,
+Tommi Inkil√§, Joonas Kerttula, except:
 
   * Font data/title.ttf copyright by Astigmatic One Eye
     (see http://www.astigmatic.com/freeware.html)
