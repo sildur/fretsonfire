@@ -14,12 +14,9 @@ readme = {file = "readme.txt", content-type = "text/plain"}
 license = "GPL-2.0-or-later"
 license-files = ["copying.txt"]
 requires-python = ">=3.8"
-maintainers = [
-    {name = "Roberto Romero", email = "sildurin@gmail.com"},
-]
-
 authors = [
     {name = "Sami Kyöstilä", email = "skyostil@touko.unrealvoodoo.org"},
+    {name = "Roberto Romero", email = "roberto@nirae.at"},
 ]
 keywords = ["game", "music", "rhythm", "guitar"]
 classifiers = [

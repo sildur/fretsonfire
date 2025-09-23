@@ -24,16 +24,17 @@ import sys
 import os
 from importlib import resources
 from pathlib import Path
-VERSION = '1.3'
+VERSION = '1.4'
 
 def appName():
   return "fretsonfire"
 
 def revision():
-  return int("$LastChangedRevision: 110 $".split(" ")[1])
+  return 0
 
 def version():
-  return "%s.%d" % (VERSION, revision())
+  rev = revision()
+  return f"{VERSION}.{rev}" if rev else VERSION
 
 def dataPath():
   # Determine whether were running from an exe or not
