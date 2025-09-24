@@ -38,6 +38,7 @@ class Guitar:
     self.boardLength    = 12.0
     self.beatsPerBoard  = 5.0
     self.strings        = 5
+    self.half_strings   = self.strings // 2
     self.fretWeight     = [0.0] * self.strings
     self.fretActivity   = [0.0] * self.strings
     self.fretColors     = Theme.fretColors
@@ -130,7 +131,7 @@ class Guitar:
     v = 1.0 - visibility
 
     if self.editorMode:
-      x = (self.strings / 2 - self.selectedString) * w
+      x = (self.half_strings - self.selectedString) * w
       s = 2 * w / self.strings
       z1 = -0.5 * visibility ** 2
       z2 = (self.boardLength - 0.5) * visibility ** 2
@@ -153,13 +154,13 @@ class Guitar:
     for n in range(self.strings - 1, -1, -1):
       glBegin(GL_TRIANGLE_STRIP)
       glTexCoord2f(0.0, 0.0)
-      glVertex3f((n - self.strings / 2) * w - sw, -v, -2)
+      glVertex3f((n - self.half_strings) * w - sw, -v, -2)
       glTexCoord2f(1.0, 0.0)
-      glVertex3f((n - self.strings / 2) * w + sw, -v, -2)
+      glVertex3f((n - self.half_strings) * w + sw, -v, -2)
       glTexCoord2f(0.0, 1.0)
-      glVertex3f((n - self.strings / 2) * w - sw, -v, self.boardLength)
+      glVertex3f((n - self.half_strings) * w - sw, -v, self.boardLength)
       glTexCoord2f(1.0, 1.0)
-      glVertex3f((n - self.strings / 2) * w + sw, -v, self.boardLength)
+      glVertex3f((n - self.half_strings) * w + sw, -v, self.boardLength)
       glEnd()
       v *= 2
     glDisable(GL_TEXTURE_2D)
@@ -300,7 +301,7 @@ class Guitar:
         
       c = self.fretColors[event.number]
 
-      x  = (self.strings / 2 - event.number) * w
+      x  = (self.half_strings - event.number) * w
       z  = ((time - pos) / self.currentPeriod) / beatsPerUnit
       z2 = ((time + event.length - pos) / self.currentPeriod) / beatsPerUnit
 
@@ -357,7 +358,7 @@ class Guitar:
         continue
 
       dStep = (step2 - step1) / dt
-      x     = (self.strings / 2 - event.number) * w
+      x     = (self.half_strings - event.number) * w
       c     = self.fretColors[event.number]
       s     = t
       step  = step1
@@ -419,7 +420,7 @@ class Guitar:
 
       glColor4f(.1 + .8 * c[0] + f, .1 + .8 * c[1] + f, .1 + .8 * c[2] + f, visibility)
       y = v + f / 6
-      x = (self.strings / 2 - n) * w
+      x = (self.half_strings - n) * w
 
       if self.keyMesh:
         glPushMatrix()
