@@ -79,6 +79,10 @@ def main(argv=None):
   engine = None
 
   try:
+    # Ensure Linux window managers associate the app window with its .desktop entry.
+    if "DISPLAY" in os.environ and "SDL_VIDEO_X11_WMCLASS" not in os.environ:
+      os.environ["SDL_VIDEO_X11_WMCLASS"] = Version.appName()
+
     while True:
       config = Config.load(Version.appName() + ".ini", setAsDefault = True)
       engine = GameEngine(config)
