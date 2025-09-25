@@ -53,9 +53,9 @@ def setNibbles(hiNibble, loNibble):
 def readBew(value):
     """
     Reads string as big endian word, (asserts len(value) in [1,2,4])
-    >>> readBew('aáâã')
+    >>> readBew('aÃ¡Ã¢Ã£')
     1642193635L
-    >>> readBew('aá')
+    >>> readBew('aÃ¡')
     25057
     """
     try:
@@ -90,9 +90,9 @@ def readVar(value):
     might be a varlen and it will only use the relevant chars.
     use varLen(readVar(value)) to see how many bytes the integer value takes.
     asserts len(value) >= 0
-    >>> readVar('€@')
+    >>> readVar('Â€@')
     64
-    >>> readVar('áâãa')
+    >>> readVar('Ã¡Ã¢Ã£a')
     205042145
     """
     sum = 0
