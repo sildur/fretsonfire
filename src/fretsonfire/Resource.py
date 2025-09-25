@@ -91,6 +91,10 @@ class Loader(Thread):
     self.join()
     return self.result
 
+  def isAlive(self):
+    """Backwards-compat wrapper for Python 2-era Thread API."""
+    return self.is_alive()
+
 class Resource(Task):
   def __init__(self, dataPath = os.path.join("..", "data")):
     self.resultQueue = Queue()
