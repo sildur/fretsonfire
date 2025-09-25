@@ -582,13 +582,16 @@ De-serializes an object from FILE."""
   return Dumper().undump(file)
 
 def dumps(obj, protocol = 0):
-  """dumps(obj, protocol = 0) -> str
+  """dumps(obj, protocol = 0) -> bytes
 
-Serializes object OBJ and returns the serialized string.
+Serializes object OBJ and returns the serialized byte string.
 PROTOCOL is unused, it exists only for compatibility with Pickle."""
   s = StringIO()
   Dumper().dump(obj, s)
-  return s.getvalue()
+  data = s.getvalue()
+  if isinstance(data, str):
+    data = data.encode('latin1')
+  return data
 
 def loads(string):
   """loads(file) -> obj
