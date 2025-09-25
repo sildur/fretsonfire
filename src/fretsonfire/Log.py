@@ -21,11 +21,13 @@
 
 import sys
 import os
+import atexit
 import Resource
 
 quiet = True
 encoding = "iso-8859-1"
 logFile = open(os.path.join(Resource.getWritableResourcePath(), "fretsonfire.log"), "w", encoding=encoding)
+atexit.register(logFile.close)
 
 if "-v" in sys.argv:
   quiet = False
