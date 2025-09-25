@@ -857,11 +857,21 @@ def getAvailableLibraries(engine, library = DEFAULT_LIBRARY):
   libraryRoots = []
   
   for songRoot in songRoots:
-    for libraryRoot in os.listdir(songRoot):
+    if not os.path.isdir(songRoot):
+      continue
+    try:
+      root_entries = os.listdir(songRoot)
+    except FileNotFoundError:
+      continue
+    for libraryRoot in root_entries:
       libraryRoot = os.path.join(songRoot, libraryRoot)
       if not os.path.isdir(libraryRoot):
         continue
-      for name in os.listdir(libraryRoot):
+      try:
+        sub_entries = os.listdir(libraryRoot)
+      except FileNotFoundError:
+        continue
+      for name in sub_entries:
         # If the directory has at least one song under it or a file called "library.ini", add it
         if os.path.isfile(os.path.join(libraryRoot, name, "song.ini")) or \
            name == "library.ini":
@@ -878,7 +888,13 @@ def getAvailableSongs(engine, library = DEFAULT_LIBRARY, includeTutorials = Fals
   songRoots = [engine.resource.fileName(library), engine.resource.fileName(library, writable = True)]
   names = []
   for songRoot in songRoots:
-    for name in os.listdir(songRoot):
+    if not os.path.isdir(songRoot):
+      continue
+    try:
+      entries = os.listdir(songRoot)
+    except FileNotFoundError:
+      continue
+    for name in entries:
       if not os.path.isfile(os.path.join(songRoot, name, "song.ini")) or name.startswith("."):
         continue
       if not name in names:

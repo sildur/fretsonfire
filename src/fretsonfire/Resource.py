@@ -108,16 +108,14 @@ class Resource(Task):
 
   def fileName(self, *name, **args):
     if not args.get("writable", False):
+      readWritePath = os.path.join(getWritableResourcePath(), *name)
       for dataPath in self.dataPaths:
-        readOnlyPath = os.path.join(dataPath, *name)
-        # If the requested file is in the read-write path and not in the
-        # read-only path, use the existing read-write one.
-        if os.path.isfile(readOnlyPath):
-          return readOnlyPath
-        readWritePath = os.path.join(getWritableResourcePath(), *name)
-        if os.path.isfile(readWritePath):
-          return readWritePath
-      return readOnlyPath
+        candidate = os.path.join(dataPath, *name)
+        if os.path.exists(candidate):
+          return candidate
+      if os.path.exists(readWritePath) or os.path.exists(os.path.dirname(readWritePath)):
+        return readWritePath
+      return os.path.join(self.dataPaths[-1], *name)
     else:
       readOnlyPath = os.path.join(self.dataPaths[-1], *name)
       try:
