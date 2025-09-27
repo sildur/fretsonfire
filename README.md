@@ -16,12 +16,12 @@
 Frets on Fire is a game of musical skill and fast fingers. The aim of the game is to play guitar with the keyboard as accurately as possible.
 
 ## Table of Contents
-- [Introduction](#1-introduction)
-- [Requirements](#2-requirements)
-- [Playing the Game](#3-playing-the-game)
-- [Editing and Importing Songs](#4-editing-and-importing-songs)
-- [Importing Guitar Hero™ Songs](#5-importing-guitar-herosupremesup-songs)
-- [Troubleshooting](#6-troubleshooting)
+- [Introduction](#introduction)
+- [Requirements](#requirements)
+- [Playing the Game](#playing-the-game)
+- [Editing and Importing Songs](#editing-and-importing-songs)
+- [Importing Guitar Hero™ Songs](#importing-guitar-herosupremesup-songs)
+- [Troubleshooting](#troubleshooting)
 
 ## Introduction
 
