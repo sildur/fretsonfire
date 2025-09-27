@@ -1,5 +1,6 @@
 recursive-include src/fretsonfire *.py *.pot
 recursive-include src/fretsonfire/data *
+recursive-exclude src/fretsonfire/data/win32 *
 include Makefile
-include readme.txt copying.txt install.txt changelog.txt
+include README.md LICENSE.md install.txt changelog.txt
 include MANIFEST.in

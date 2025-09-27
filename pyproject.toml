@@ -10,9 +10,9 @@ build-backend = "setuptools.build_meta"
 name = "fretsonfire"
 dynamic = ["version"]
 description = "Frets on Fire is a game of musical skill and fast fingers."
-readme = {file = "readme.txt", content-type = "text/plain"}
+readme = {file = "README.md", content-type = "text/markdown"}
 license = "GPL-2.0-or-later"
-license-files = ["copying.txt"]
+license-files = ["LICENSE.md"]
 requires-python = ">=3.8"
 authors = [
     {name = "Sami Kyöstilä", email = "skyostil@touko.unrealvoodoo.org"},
@@ -51,11 +51,6 @@ Homepage = "http://www.unrealvoodoo.org"
 package-dir = {"" = "src"}
 include-package-data = true
 
-[tool.setuptools.package-data]
-"fretsonfire" = [
-    "data/**/*",
-]
-
 [tool.setuptools.cmdclass]
 build_py = "fretsonfire._build.BuildPyWithTranslations"
 sdist = "fretsonfire._build.SDistWithTranslations"
@@ -72,7 +67,7 @@ project_name = "Frets on Fire"
 bundle = "at.nirae"
 version = "1.4"
 url = "https://github.com/sildur/fretsonfire"
-license.file = "copying.txt"
+license.file = "LICENSE.md"
 author = "Roberto Romero"
 author_email = "roberto@nirae.at"
 
@@ -106,6 +101,7 @@ requires = []
 [tool.briefcase.app.fretsonfire.linux.system.debian]
 system_requires = []
 system_runtime_requires = []
+debian_release = "trixie"
 
 [tool.briefcase.app.fretsonfire.linux.system.rhel]
 system_requires = []

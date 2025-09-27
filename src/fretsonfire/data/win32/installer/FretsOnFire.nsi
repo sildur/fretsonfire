@@ -136,7 +136,7 @@ Section "Desktop Shortcut" SecShortcuts
 !ifndef NO_STARTMENUSHORTCUTS
   CreateDirectory "$SMPROGRAMS\Frets on Fire"
   CreateShortCut "$SMPROGRAMS\Frets on Fire\Frets on Fire.lnk" "$INSTDIR\FretsOnFire.exe" "" "$INSTDIR\icon.ico" 0
-  CreateShortCut "$SMPROGRAMS\Frets on Fire\Readme.lnk" "$INSTDIR\readme.txt"
+  CreateShortCut "$SMPROGRAMS\Frets on Fire\Readme.lnk" "$INSTDIR\README.md"
   CreateShortCut "$SMPROGRAMS\Frets on Fire\Uninstall Frets on Fire.lnk" "$INSTDIR\Uninstall.exe"
   WriteINIStr "$SMPROGRAMS\Frets on Fire\Frets on Fire Webpage.url" "InternetShortcut" "URL" "http://fretsonfire.sourceforge.net"
 
@@ -539,8 +539,8 @@ Section "Uninstall"
   Delete $INSTDIR\msvcr71.dll
   Delete $INSTDIR\python25.dll
   Delete $INSTDIR\msvcp71.dll
-  Delete $INSTDIR\readme.txt
-  Delete $INSTDIR\copying.txt
+  Delete $INSTDIR\README.md
+  Delete $INSTDIR\LICENSE.md
   Delete $INSTDIR\Uninstall.exe
   RMDir /r $INSTDIR\data\songs
   RMDir /r $INSTDIR\data
