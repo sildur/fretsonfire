@@ -65,6 +65,7 @@ class GuitarSceneClient(GuitarScene, SceneClient):
     self.lastSongPos      = 0.0
     self.keyBurstTimeout  = None
     self.keyBurstPeriod   = 30
+    self.paused           = False
     self.camera.target    = (0, 0, 4)
     self.camera.origin    = (0, 3, -3)
 
@@ -95,11 +96,13 @@ class GuitarSceneClient(GuitarScene, SceneClient):
   def pauseGame(self):
     if self.song:
       self.song.pause()
+    self.paused = True
 
   def resumeGame(self):
     self.loadSettings()
     if self.song:
       self.song.unpause()
+    self.paused = False
 
   def loadSettings(self):
     self.delay            = self.engine.config.get("audio", "delay")
@@ -164,7 +167,7 @@ class GuitarSceneClient(GuitarScene, SceneClient):
       # update stage
       self.stage.run(pos, self.guitar.currentPeriod)
 
-      if self.countdown <= 0 and not self.song.isPlaying() and not self.done:
+      if self.countdown <= 0 and not self.song.isPlaying() and not self.done and not self.paused:
         self.goToResults()
         return
         
