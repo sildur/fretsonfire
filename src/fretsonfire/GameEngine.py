@@ -23,6 +23,7 @@ from OpenGL.GL import *
 import pygame
 import os
 import sys
+from urllib.parse import urlparse
 
 from Engine import Engine, Task
 from Video import Video
@@ -189,7 +190,8 @@ class GameEngine(Engine):
     Theme.open(theme)
 
     # Make sure we are using the new upload URL
-    if self.config.get("game", "uploadurl").startswith("http://kempele.fi"):
+    parsed_upload_url = urlparse(self.config.get("game", "uploadurl"))
+    if parsed_upload_url.hostname == "kempele.fi":
       self.config.set("game", "uploadurl", "http://fretsonfire.sourceforge.net/play")
 
     self.addTask(self.audio, synchronized = False)
