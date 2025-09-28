@@ -1,9 +1,25 @@
 #!/usr/bin/python
 
-import os, fnmatch
+import os
+import fnmatch
+import subprocess
 
 for root, dirs, files in os.walk("."):
   for svg in fnmatch.filter(files, "*.svg"):
     svg = os.path.join(root, svg)
-    result = os.system("inkscape -e '%s' -D '%s' -b black -y 0.0" % (svg.replace(".svg", ".png"), svg))
-    print(svg, result)
+    png = os.path.splitext(svg)[0] + ".png"
+    result = subprocess.run(
+      [
+        "inkscape",
+        "-e",
+        png,
+        "-D",
+        svg,
+        "-b",
+        "black",
+        "-y",
+        "0.0",
+      ],
+      check=False,
+    )
+    print(svg, result.returncode)
