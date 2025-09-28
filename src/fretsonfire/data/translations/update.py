@@ -1,5 +1,7 @@
-#!/usr/bin/python
-import os
+#!/usr/bin/env python3
+
+import subprocess
+from pathlib import Path
 
 translations = {
   "fr":  "french",
@@ -25,12 +27,28 @@ translations = {
 
 files = ["fretsonfire", "tutorial"]
 
-for id, lang in translations.items():
-  print "%s:" % lang,
-  f = ["%s_%s.po" % (fn, id) for fn in files]
-  ret = os.system("msgcat " + " ".join(f) + " | msgfmt - -o %s.mo" % lang)
-  if not ret:
-    print "ok"
+translation_dir = Path(__file__).resolve().parent
+
+for lang_id, lang_name in translations.items():
+  print(f"{lang_name}:", end=" ")
+  po_files = [translation_dir / f"{fn}_{lang_id}.po" for fn in files]
+  try:
+    msgcat = subprocess.run(
+      ["msgcat", *map(str, po_files)],
+      check=True,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+    )
+    subprocess.run(
+      ["msgfmt", "-", "-o", str(translation_dir / f"{lang_name}.mo")],
+      input=msgcat.stdout,
+      check=True,
+      stdout=subprocess.PIPE,
+      stderr=subprocess.PIPE,
+    )
+  except FileNotFoundError as exc:
+    print(f"error missing tool: {exc.filename}")
+  except subprocess.CalledProcessError as exc:
+    print(f"error {exc.returncode}")
   else:
-    print "error", ret
-  
+    print("ok")
