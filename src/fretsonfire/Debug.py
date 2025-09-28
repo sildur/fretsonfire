@@ -101,14 +101,13 @@ class DebugLayer(Layer):
     after  = len(gc.get_objects())
     Log.debug("%d GC objects collected, total %d -> %d." % (coll, before, after))
     fn = "gcdump.txt"
-    f = open(fn, "w")
     n = 0
     gc.collect()
-    for obj in gc.garbage:
-      try:
-        print >>f, obj
-        n += 1
-      except:
-        pass
-    f.close()
+    with open(fn, "w", encoding="utf-8") as f:
+      for obj in gc.garbage:
+        try:
+          print(obj, file=f)
+          n += 1
+        except Exception:
+          pass
     Log.debug("Wrote a dump of %d GC garbage objects to %s." % (n, fn))
