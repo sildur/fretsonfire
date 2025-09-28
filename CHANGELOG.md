@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v1.4.8 (2025-09-28)
+
+### Bug Fixes
+
+- Fix gcDump printing for Python 3
+  ([`7cb5332`](https://github.com/sildur/fretsonfire/commit/7cb533292c1ae8e8f898411f7b70bed25e237de9))
+
+### Continuous Integration
+
+- Filter non-python artifacts before publish
+  ([`d2aea60`](https://github.com/sildur/fretsonfire/commit/d2aea60a23cab431afc623bbfbd004f13c8b83b0))
+
+- Publish all artifacts
+  ([`2983dc0`](https://github.com/sildur/fretsonfire/commit/2983dc024f23ba45e3628c4fb307d8cbcbffb12b))
+
+
 ## v1.4.7 (2025-09-28)
 
 ### Bug Fixes
