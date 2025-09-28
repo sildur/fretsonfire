@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.4.7 (2025-09-28)
+
+### Bug Fixes
+
+- Specify exception class in MidiInfoReader
+  ([`ffb3b01`](https://github.com/sildur/fretsonfire/commit/ffb3b01c4c2d993d231372d1f4e0d4668eea1adb))
+
+### Documentation
+
+- **ci**: Document linux packaging steps
+  ([`a63b1f4`](https://github.com/sildur/fretsonfire/commit/a63b1f4670684ef0c0ab7e4988c040b967ef4bcc))
+
+
 ## v1.4.6 (2025-09-28)
 
 ### Bug Fixes
