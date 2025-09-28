@@ -163,7 +163,7 @@ jobs:
           briefcase build \
             ${{ matrix.platform || matrix.target }} \
             ${{ matrix.output-format }} \
-            --test --no-input --log \
+            --no-input --log \
             ${{ matrix.briefcase-args }}
       - name: Package | ${{ matrix.target }} package
         run: |
