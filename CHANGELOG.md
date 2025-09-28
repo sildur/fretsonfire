@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.4.5 (2025-09-28)
+
+### Bug Fixes
+
+- **translations**: Make update script Python 3 compatible
+  ([`6d305df`](https://github.com/sildur/fretsonfire/commit/6d305df8e8bbaacf995d775e17e6b277f1b2e49a))
+
+### Build System
+
+- **ci**: Fix PSR config
+  ([`ccced37`](https://github.com/sildur/fretsonfire/commit/ccced37a3e113012b8ff4002bb7ed52264edcce8))
+
+
 ## v1.4.4 (2025-09-28)
 
 ### Bug Fixes
