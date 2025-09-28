@@ -160,6 +160,10 @@ jobs:
           name: distribution-artifacts
           path: dist
 
+      - name: Prepare | Filter Python distributions
+        run: |
+          find dist -type f ! -name "*.whl" ! -name "*.tar.gz" -print -delete
+
       # ------------------------------------------------------------------- #
       # Python Semantic Release is not responsible for publishing your      #
       # python artifacts to PyPI. Use the official PyPA publish action      #
