@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.4.6 (2025-09-28)
+
+### Bug Fixes
+
+- **ci**: Conditionally upload distribution artifacts based on release status
+  ([`22770c6`](https://github.com/sildur/fretsonfire/commit/22770c604b6f7f3a75f89e852cb2069db75b7abb))
+
+### Documentation
+
+- Merge legacy changelog into markdown
+  ([`e7f8065`](https://github.com/sildur/fretsonfire/commit/e7f806545e1de4d472a5e51c0a47d1d38c3a4b52))
+
+
 ## v1.4.5 (2025-09-28)
 
 ### Bug Fixes
