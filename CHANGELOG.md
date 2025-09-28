@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v1.4.2 (2025-09-28)
+
+### Bug Fixes
+
+- **config**: Parse upload URL host safely
+  ([`4f3f109`](https://github.com/sildur/fretsonfire/commit/4f3f10944c231d5739f8df20038cba3b8af675f6))
+
+### Build System
+
+- **ci**: Enable manual release runs and full semantic-release build
+  ([`5eb56ab`](https://github.com/sildur/fretsonfire/commit/5eb56abc9feb8a5af5aa36a181e2d11e9372e1ef))
+
+- **ci**: Fix build command
+  ([`809c2d2`](https://github.com/sildur/fretsonfire/commit/809c2d267f4817a4f274a6512d3b3d9f83e5bead))
+
+
 ## v1.4.1 (2025-09-28)
 
 ### Bug Fixes
