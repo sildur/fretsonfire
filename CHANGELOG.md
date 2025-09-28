@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.4 (2025-09-28)
+
+### Bug Fixes
+
+- Change Python shebang to use env for Python 3
+  ([`5258d81`](https://github.com/sildur/fretsonfire/commit/5258d819d812e5af4365cd4307bd9b9fe4c15734))
+
+
 ## v1.4.3 (2025-09-28)
 
 ### Bug Fixes
