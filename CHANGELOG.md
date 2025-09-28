@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.5.3 (2025-09-28)
+
+### Bug Fixes
+
+- **ci**: Remove test param in pipeline
+  ([`e40c44f`](https://github.com/sildur/fretsonfire/commit/e40c44f9fc58fd680b056a54f9341021fd085d6d))
+
+
 ## v1.5.2 (2025-09-28)
 
 ### Bug Fixes
