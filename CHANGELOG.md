@@ -2,6 +2,22 @@
 
 <!-- version list -->
 
+## v1.5.0 (2025-09-28)
+
+### Bug Fixes
+
+- Clean pyflakes warnings
+  ([`2cae1af`](https://github.com/sildur/fretsonfire/commit/2cae1af0674208d918095ac7440f869ecb66ccc7))
+
+- Pause countdown when menu is open
+  ([`2e09ac1`](https://github.com/sildur/fretsonfire/commit/2e09ac16fe75e751f482103485e95f11e2bc4c31))
+
+### Features
+
+- Enhance continuous delivery workflow with desktop asset publishing
+  ([`004712c`](https://github.com/sildur/fretsonfire/commit/004712cb641cc9fcab717602160b6d76c7e32236))
+
+
 ## v1.4.8 (2025-09-28)
 
 ### Bug Fixes
