@@ -84,7 +84,7 @@ class GuitarSceneClient(GuitarScene, SceneClient):
     settingsMenu.fadeScreen = True
 
     self.menu = Menu(self.engine, [
-      (_("Return to Song"),    lambda: None),
+      (_("Return to Song"),    self._closePauseMenu),
       (_("Restart Song"),      self.restartSong),
       (_("Change Song"),       self.changeSong),
       (_("Settings"),          settingsMenu),
@@ -103,6 +103,10 @@ class GuitarSceneClient(GuitarScene, SceneClient):
     if self.song:
       self.song.unpause()
     self.paused = False
+
+  def _closePauseMenu(self):
+    # Pop the pause menu and let Menu.onClose handle resuming playback.
+    self.engine.view.popLayer(self.menu)
 
   def loadSettings(self):
     self.delay            = self.engine.config.get("audio", "delay")
