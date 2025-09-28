@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.5.1 (2025-09-28)
+
+### Bug Fixes
+
+- Resume gameplay when closing pause menu
+  ([`ab051a2`](https://github.com/sildur/fretsonfire/commit/ab051a2bf055f4e2123c65ef3fc458395e64d2d5))
+
+### Continuous Integration
+
+- Fix packaging
+  ([`d833ffa`](https://github.com/sildur/fretsonfire/commit/d833ffaedb404ab42269bf5079f2f24a79d54727))
+
+
 ## v1.5.0 (2025-09-28)
 
 ### Bug Fixes
