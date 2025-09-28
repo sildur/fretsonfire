@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.4.3 (2025-09-28)
+
+### Bug Fixes
+
+- Replace os.system with subprocess for svg2png
+  ([`9122aea`](https://github.com/sildur/fretsonfire/commit/9122aeae56f6abde3bf0c5fe627864baced5ebc4))
+
+
 ## v1.4.2 (2025-09-28)
 
 ### Bug Fixes
