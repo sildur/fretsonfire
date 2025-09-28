@@ -225,7 +225,7 @@ class WorldClient(World):
 
   def leaveScene(self, player, scene):
     sceneId  = self.objects.id(scene)
-    playerId = objects.id(player)
+    playerId = self.objects.id(player)
     self.session.sendMessage(LeaveScene(sceneId = sceneId, playerId = playerId))
 
   def deleteScene(self, scene):

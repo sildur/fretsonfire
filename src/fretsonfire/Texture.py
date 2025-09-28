@@ -27,17 +27,63 @@ from PIL import Image
 import pygame
 from io import BytesIO
 from PIL import PngImagePlugin
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL import extensions as gl_extensions
+from OpenGL.GL import (
+  GL_CLAMP,
+  GL_DEPTH_COMPONENT24,
+  GL_INTENSITY8,
+  GL_LINEAR,
+  GL_LINEAR_MIPMAP_LINEAR,
+  GL_LUMINANCE,
+  GL_MODULATE,
+  GL_NICEST,
+  GL_PERSPECTIVE_CORRECTION_HINT,
+  GL_RGBA,
+  GL_RGB,
+  GL_STENCIL_INDEX8,
+  GL_TEXTURE_2D,
+  GL_TEXTURE_ENV,
+  GL_TEXTURE_ENV_MODE,
+  GL_TEXTURE_MAG_FILTER,
+  GL_TEXTURE_MIN_FILTER,
+  GL_TEXTURE_WRAP_S,
+  GL_TEXTURE_WRAP_T,
+  GL_UNPACK_ALIGNMENT,
+  GL_UNSIGNED_BYTE,
+  GL_VENDOR,
+  glBindTexture,
+  glCopyTexSubImage2D,
+  glDeleteBuffers,
+  glDeleteTextures,
+  glGenTextures,
+  glGetString,
+  glHint,
+  glPixelStorei,
+  glTexEnvf,
+  glTexImage2D,
+  glTexParameterf,
+  glTexParameteri,
+  glTexSubImage2D,
+)
+from OpenGL.GL.EXT.framebuffer_object import (
+  GL_COLOR_ATTACHMENT0_EXT,
+  GL_DEPTH_ATTACHMENT_EXT,
+  GL_FRAMEBUFFER_EXT,
+  GL_RENDERBUFFER_EXT,
+  GL_STENCIL_ATTACHMENT_EXT,
+  glBindFramebufferEXT,
+  glBindRenderbufferEXT,
+  glFramebufferRenderbufferEXT,
+  glFramebufferTexture2DEXT,
+  glGenerateMipmapEXT,
+  glGenFramebuffersEXT,
+  glGenRenderbuffersEXT,
+  glRenderbufferStorageEXT,
+)
+from OpenGL.GLU import gluBuild2DMipmaps
 from queue import Queue, Empty
 
 Config.define("opengl", "supportfbo", bool, False)
-
-try:
-  from glew import *
-except ImportError:
-  #Log.warn("GLEWpy not found -> Emulating Render to texture functionality.")
-  pass
 
 class TextureException(Exception):
   pass
@@ -89,7 +135,7 @@ class Framebuffer:
       # On current NVIDIA hardware, the stencil buffer must be packed
       # with the depth buffer (GL_NV_packed_depth_stencil) instead of
       # separate binding, so we must check for that extension here
-      if glewGetExtension("GL_NV_packed_depth_stencil"):
+      if gl_extensions.hasGLExtension("GL_NV_packed_depth_stencil"):
         GL_DEPTH_STENCIL_EXT = 0x84F9
       
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, self.depthbuf)
@@ -109,7 +155,7 @@ class Framebuffer:
         self._checkError()
         glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, self.stencilbuf)
         glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
-                                 GL_STENCIL_INDEX_EXT, width, height)
+                                 GL_STENCIL_INDEX8, width, height)
         glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
                                      GL_STENCIL_ATTACHMENT_EXT,
                                      GL_RENDERBUFFER_EXT, self.stencilbuf)
@@ -132,14 +178,8 @@ class Framebuffer:
     if not Config.get("opengl", "supportfbo"):
       Log.warn("Frame buffer object support disabled in configuration.")
       return False
-  
-    if not "glewGetExtension" in globals():
-      Log.warn("GLEWpy not found, so render to texture functionality disabled.")
-      return False
 
-    glewInit()
-
-    if not glewGetExtension("GL_EXT_framebuffer_object"):
+    if not gl_extensions.hasGLExtension("GL_EXT_framebuffer_object"):
       Log.warn("No support for framebuffer objects, so render to texture functionality disabled.")
       return False
       

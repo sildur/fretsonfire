@@ -20,9 +20,8 @@
 #####################################################################
 
 import pygame
-import os
-from OpenGL.GL import *
-from OpenGL.GL.ARB.multisample import *
+from OpenGL.GL import glEnable
+from OpenGL.GL.ARB.multisample import GL_MULTISAMPLE_ARB
 import Log
 
 class Video:

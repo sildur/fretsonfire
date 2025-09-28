@@ -20,7 +20,6 @@
 #####################################################################
 
 import pygame
-import time
 
 class Timer(object):
   def __init__(self, fps = 60, tickrate = 1.0):

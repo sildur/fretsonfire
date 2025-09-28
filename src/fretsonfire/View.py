@@ -20,8 +20,19 @@
 #####################################################################
 
 from __future__ import division
-from OpenGL.GL import *
-from OpenGL.GLU import *
+from OpenGL.GL import (
+  GL_MODELVIEW,
+  GL_PROJECTION,
+  GL_VIEWPORT,
+  glGetIntegerv,
+  glLoadIdentity,
+  glMatrixMode,
+  glOrtho,
+  glPopMatrix,
+  glPushMatrix,
+  glScissor,
+  glViewport,
+)
 
 import Log
 

@@ -20,7 +20,6 @@
 #####################################################################
 
 import unittest
-import time
 import pygame
 from Timer import Timer
 
@@ -36,7 +35,7 @@ class TimerTest(unittest.TestCase):
 
     fps = []
     while t.frame < 100:
-      ticks = list(t.advanceFrame())
+      list(t.advanceFrame())
       fps.append(t.fpsEstimate)
 
     fps = fps[30:]

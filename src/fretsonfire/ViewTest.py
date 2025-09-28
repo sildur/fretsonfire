@@ -21,7 +21,7 @@
 
 import unittest
 from GameEngine import GameEngine
-from View import View, Layer
+from View import Layer
 
 class TestLayer(Layer):
   def __init__(self):

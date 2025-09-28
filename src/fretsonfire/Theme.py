@@ -19,7 +19,7 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from OpenGL.GL import *
+from OpenGL.GL import glColor4f
 import Config
 
 # read the color scheme from the config file
