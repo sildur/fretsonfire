@@ -116,26 +116,28 @@ jobs:
       contents: write
     strategy:
       matrix:
-        target: [windows, macos, linux-debian, linux-fedora]
+        target: [Windows, macOS, Debian, Fedora]
         include:
-          - target: windows
-            runs-on: windows-latest
-            briefcase-platform: windows
-            briefcase-target: exe
-          - target: macos
-            runs-on: macos-latest
-            briefcase-platform: macOS
-            briefcase-target: dmg
-          - target: linux-debian
-            runs-on: ubuntu-latest
-            briefcase-platform: linux
-            briefcase-target: debian
-            install-system-deps: true
-          - target: linux-fedora
-            runs-on: ubuntu-latest
-            briefcase-platform: linux
-            briefcase-target: fedora
-            install-system-deps: true
+          - target: Windows
+            output-format: "app"
+            runs-on: "windows-latest"
+          - target: macOS
+            routput-format: "app"
+            runs-on: "macos-latest"
+          - target: Debian
+            platform: "Linux"
+            output-format: "system"
+            runs-on: "ubuntu-latest"
+            pre-command: "sudo apt -y install socat"
+            briefcase-run-prefix: "xvfb-run"
+            briefcase-args: "--target debian"
+          - target: Fedora
+            platform: "Linux"
+            output-format: "system"
+            runs-on: "ubuntu-latest"
+            pre-command: "sudo apt -y install socat"
+            briefcase-run-prefix: "xvfb-run"
+            briefcase-args: "--target fedora"
     runs-on: ${{ matrix.runs-on }}
 
     steps:
@@ -150,34 +152,26 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Setup | Install system dependencies for Briefcase
-        if: matrix.install-system-deps == true
-        shell: bash
-        run: |
-          sudo apt-get update
-          sudo apt-get install --yes \
-            build-essential \
-            gir1.2-gtk-3.0 \
-            libcairo2-dev \
-            libgirepository1.0-dev \
-            libgtk-3-dev \
-            libpango1.0-dev \
-            patchelf \
-            pkg-config \
-            python3-dev \
-            rpm
-
       - name: Setup | Install Briefcase
         shell: bash
         run: |
-          python -m pip install --upgrade pip
+          python -m pip install -U pip setuptools wheel
           python -m pip install briefcase
 
-      - name: Build | ${{ matrix.briefcase-platform }} package
-        shell: bash
+      - name: Build | ${{ matrix.target }} package
         run: |
-          briefcase build ${{ matrix.briefcase-platform }} --target ${{ matrix.briefcase-target }} --update
-          briefcase package ${{ matrix.briefcase-platform }} --target ${{ matrix.briefcase-target }} --update
+          briefcase build \
+            ${{ matrix.platform || matrix.target }} \
+            ${{ matrix.output-format }} \
+            --test --no-input --log \
+            ${{ matrix.briefcase-args }} \
+      - name: Package | ${{ matrix.target }} package
+        run: |
+          briefcase package \
+            ${{ matrix.platform || matrix.target }} \
+            ${{ matrix.output-format }} \
+            --update --adhoc-sign --no-input --log \
+            ${{ matrix.briefcase-args }} \
 
       - name: Upload | Distribution Artifacts (${{ matrix.target }})
         uses: actions/upload-artifact@v4
