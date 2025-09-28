@@ -769,7 +769,7 @@ class MidiInfoReader(midi.MidiOutStream):
       if not diff in self.difficulties:
         self.difficulties.append(diff)
         if len(self.difficulties) == len(difficulties):
-          raise Done
+          raise MidiInfoReader.Done
     except KeyError:
       pass
 
