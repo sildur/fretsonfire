@@ -158,7 +158,11 @@ jobs:
           python -m pip install -U pip setuptools wheel
           python -m pip install briefcase
 
+      - name: Setup Environment
+        run: |
+          ${{ matrix.pre-command }}
       - name: Build | ${{ matrix.target }} package
+        shell: bash
         run: |
           briefcase build \
             ${{ matrix.platform || matrix.target }} \
@@ -166,6 +170,7 @@ jobs:
             --no-input --log \
             ${{ matrix.briefcase-args }}
       - name: Package | ${{ matrix.target }} package
+        shell: bash
         run: |
           briefcase package \
             ${{ matrix.platform || matrix.target }} \
