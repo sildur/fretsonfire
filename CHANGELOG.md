@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.5.4 (2025-09-28)
+
+### Bug Fixes
+
+- **ci**: Force shell to bash
+  ([`5d12823`](https://github.com/sildur/fretsonfire/commit/5d128236028e00c9cc394aa3ed5fbd276b4b28e0))
+
+
 ## v1.5.3 (2025-09-28)
 
 ### Bug Fixes
