@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.5.2 (2025-09-28)
+
+### Bug Fixes
+
+- **ci**: Fix backslash in pipeline
+  ([`658718f`](https://github.com/sildur/fretsonfire/commit/658718f0e56e9ac16fe4c4778a9d39f96383616e))
+
+
 ## v1.5.1 (2025-09-28)
 
 ### Bug Fixes
