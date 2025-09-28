@@ -164,6 +164,11 @@ class GuitarSceneClient(GuitarScene, SceneClient):
 
     # update song
     if self.song:
+      if self.paused:
+        # Keep audio state consistent but don't advance gameplay timers.
+        self.song.update(ticks)
+        return
+
       # update stage
       self.stage.run(pos, self.guitar.currentPeriod)
 
