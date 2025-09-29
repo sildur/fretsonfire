@@ -196,7 +196,7 @@ jobs:
 
     steps:
       - name: Setup | Download Desktop Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: distribution-artifacts-*
           merge-multiple: true
