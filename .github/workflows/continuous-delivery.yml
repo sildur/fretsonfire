@@ -90,7 +90,7 @@ jobs:
 
       - name: Setup | Python
         if: steps.release.outputs.released == 'true'
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -148,7 +148,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup | Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
