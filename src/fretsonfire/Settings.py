@@ -103,7 +103,7 @@ class KeyConfigChoice(Menu.Choice):
         return getattr(pygame, k)
     o = self.config.prototype[self.section][self.option]
     v = self.config.get(self.section, self.option)
-    return "%s: %s" % (o.text, pygame.key.name(keycode(v)).capitalize())
+    return "%s: %s" % (o.text, self.engine.input.formatKeyName(keycode(v)).capitalize())
     
   def change(self):
     o = self.config.prototype[self.section][self.option]

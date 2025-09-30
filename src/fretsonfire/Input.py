@@ -93,8 +93,7 @@ class Input(Task):
     Audio.Music.setEndEvent(MusicFinished)
 
     # Custom key names
-    self.getSystemKeyName = pygame.key.name
-    pygame.key.name       = self.getKeyName
+    self._systemKeyName = pygame.key.name
 
   def reloadControls(self):
     self.controls = Controls()
@@ -169,7 +168,7 @@ class Input(Task):
     x, y = (v % 3) - 1, (v / 3) - 1
     return (id >> 8, (id >> 4) & 0xf, (x, y))
 
-  def getKeyName(self, id):
+  def formatKeyName(self, id):
     if id >= 0x30000:
       joy, axis, pos = self.decodeJoystickHat(id)
       return "Joy #%d, hat %d %s" % (joy + 1, axis, pos)
@@ -179,7 +178,11 @@ class Input(Task):
     elif id >= 0x10000:
       joy, but = self.decodeJoystickButton(id)
       return "Joy #%d, %s" % (joy + 1, chr(ord('A') + but))
-    return self.getSystemKeyName(id)
+    return self._systemKeyName(id)
+
+  # Backwards compatibility for callers using the old name.
+  def getKeyName(self, id):
+    return self.formatKeyName(id)
 
   def run(self, ticks):
     pygame.event.pump()
