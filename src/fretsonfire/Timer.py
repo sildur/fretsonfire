@@ -31,7 +31,9 @@ class Timer(object):
     self.fpsEstimate           = 0
     self.fpsEstimateStartTick  = self.ticks
     self.fpsEstimateStartFrame = self.frame
+    self.fpsEstimateElapsed    = 0.0
     self.highPriority          = False
+    self.clock                 = pygame.time.Clock()
 
   def getTime(self):
     return int(pygame.time.get_ticks() * self.tickrate)
@@ -39,21 +41,24 @@ class Timer(object):
   time = property(getTime)
 
   def advanceFrame(self):
-    while True:
-      ticks = self.getTime()
-      diff = ticks - self.ticks
-      if diff >= self.timestep:
-        break
-      if not self.highPriority:
-        pygame.time.wait(0)
+    if self.highPriority:
+      elapsed = self.clock.tick_busy_loop(self.fps)
+    else:
+      elapsed = self.clock.tick(self.fps)
 
-    self.ticks = ticks
+    diff = elapsed * self.tickrate
+    self.ticks += diff
     self.frame += 1
 
-    if ticks > self.fpsEstimateStartTick + 250:
+    self.fpsEstimateElapsed += elapsed
+    if self.fpsEstimateElapsed > 250:
       n = self.frame - self.fpsEstimateStartFrame
-      self.fpsEstimate = 1000.0 * n / (ticks - self.fpsEstimateStartTick)
-      self.fpsEstimateStartTick = ticks
+      if self.fpsEstimateElapsed:
+        self.fpsEstimate = 1000.0 * n / self.fpsEstimateElapsed
+      else:
+        self.fpsEstimate = 0
+      self.fpsEstimateStartTick = self.ticks
       self.fpsEstimateStartFrame = self.frame
+      self.fpsEstimateElapsed = 0.0
 
     return [min(diff, self.timestep * 16)]
