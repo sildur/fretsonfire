@@ -138,12 +138,9 @@ class GameEngine(Engine):
     tickrate     = self.config.get("engine", "tickrate")
     Engine.__init__(self, fps = fps, tickrate = tickrate)
     
-    pygame.init()
-    
     self.title             = _("Frets on Fire")
     self.restartRequested  = False
     self.handlingException = False
-    self.video             = Video(self.title)
     self.audio             = Audio()
 
     Log.debug("Initializing audio.")
@@ -151,9 +148,10 @@ class GameEngine(Engine):
     bits         = self.config.get("audio", "bits")
     stereo       = self.config.get("audio", "stereo")
     bufferSize   = self.config.get("audio", "buffersize")
-    
+
     self.audio.pre_open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
     pygame.init()
+    self.video             = Video(self.title)
     self.audio.open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
 
     Log.debug("Initializing video.")
