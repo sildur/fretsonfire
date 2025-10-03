@@ -1,5 +1,4 @@
 """Headless tests for the core Engine scheduler."""
-from __future__ import annotations
 
 from src.fretsonfire.Engine import Engine
 from src.fretsonfire.Task import Task

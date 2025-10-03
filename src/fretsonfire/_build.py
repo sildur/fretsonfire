@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from distutils import log
 from pathlib import Path
 from typing import Iterable, Sequence

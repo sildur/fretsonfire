@@ -66,7 +66,7 @@ def main(argv=None):
   args = parse_args(argv)
 
   if args.verbose:
-    Log.quiet = False
+    Log.set_quiet(False)
 
   song_name = args.song_name
   engine = None

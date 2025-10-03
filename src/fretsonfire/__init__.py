@@ -1,5 +1,4 @@
 """Frets on Fire game package."""
-from __future__ import annotations
 
 from importlib import import_module
 
@@ -9,4 +8,3 @@ except Exception:  # pragma: no cover - metadata only
     __version__ = "0.0.dev0"
 
 __all__ = []
-

@@ -113,6 +113,8 @@ class Connection(asyncore.dispatcher):
         data = self.recv(2)
         if data:
           self._receivedSizeField = struct.unpack("H", data)[0]
+          self._packet.seek(0)
+          self._packet.truncate(0)
         return
       data = self.recv(self._receivedSizeField)
       if data:

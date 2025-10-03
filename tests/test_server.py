@@ -1,5 +1,4 @@
 """Headless tests for server-side session management."""
-from __future__ import annotations
 
 import pytest
 

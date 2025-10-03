@@ -1,5 +1,4 @@
 """Headless tests for song loading and saving."""
-from __future__ import annotations
 
 import importlib
 import os
@@ -89,6 +88,8 @@ def song_module(monkeypatch, tmp_path):
 
     importlib.reload(log_module)
     importlib.reload(song_module)
+
+    log_module.configure(log_path=tmp_home / "fretsonfire.log", quiet=True, console=False)
 
     monkeypatch.setattr(song_module.Audio, "Music", DummyMusic)
     monkeypatch.setattr(song_module.Audio, "StreamingSound", DummyStreamingSound)
