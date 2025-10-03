@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v1.5.5 (2025-10-03)
+
+### Bug Fixes
+
+- Harden logging and network framing
+  ([`b445031`](https://github.com/sildur/fretsonfire/commit/b445031f5d8d04551f5b9b6cc08d4c36990644a5))
+
+### Build System
+
+- **deps**: Bump actions/download-artifact from 4 to 5
+  ([`c538347`](https://github.com/sildur/fretsonfire/commit/c53834776a028945c71e7456dc136d2a45fa3366))
+
+- **deps**: Bump actions/setup-python from 5 to 6
+  ([`7ca87f3`](https://github.com/sildur/fretsonfire/commit/7ca87f3ae137755e57e568951c59a46d6132dbf0))
+
+### Continuous Integration
+
+- Run tests on pull requests before release
+  ([`6fc8e88`](https://github.com/sildur/fretsonfire/commit/6fc8e888f33a8a336356a57621a4ed3ac1f72b3b))
+
+### Testing
+
+- Replace legacy tests with headless pytest suites
+  ([`62dec4f`](https://github.com/sildur/fretsonfire/commit/62dec4f150863b930a81f8fe74594b2e346509c9))
+
+
 ## v1.5.4 (2025-09-28)
 
 ### Bug Fixes
