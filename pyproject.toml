@@ -13,7 +13,7 @@ description = "Frets on Fire is a game of musical skill and fast fingers."
 readme = {file = "README.md", content-type = "text/markdown"}
 license = "GPL-2.0-or-later"
 license-files = ["LICENSE.md"]
-requires-python = ">=3.8"
+requires-python = ">=3.13"
 authors = [
     {name = "Sami Kyöstilä", email = "skyostil@touko.unrealvoodoo.org"},
     {name = "Roberto Romero", email = "roberto@nirae.at"},
