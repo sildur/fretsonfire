@@ -20,8 +20,8 @@
 #####################################################################
 
 from configparser import ConfigParser
-import Log
-import Resource
+from . import Log
+from . import Resource
 import os
 
 encoding  = "iso-8859-1"

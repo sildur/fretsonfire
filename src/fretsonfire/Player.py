@@ -20,9 +20,9 @@
 #####################################################################
 
 import pygame
-import Config
-import Song
-from Language import _
+from . import Config
+from . import Song
+from .Language import _
 
 # Map legacy SDL 1.x key codes to their SDL 2 equivalents so that
 # old configuration files keep working (notably affects function keys).

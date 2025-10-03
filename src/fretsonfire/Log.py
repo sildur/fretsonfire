@@ -22,7 +22,7 @@
 import sys
 import os
 import atexit
-import Resource
+from . import Resource
 
 quiet = True
 encoding = "iso-8859-1"

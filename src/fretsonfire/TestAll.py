@@ -39,6 +39,7 @@ for root, dirs, files in os.walk("."):
       tests.append(__import__(m))
 
 suite = unittest.TestSuite()
+loader = unittest.TestLoader()
 
 if "-i" in sys.argv:
   suffix = "TestInteractive"
@@ -48,7 +49,7 @@ else:
 for test in tests:
   for item in dir(test):
     if item.endswith(suffix):
-      suite.addTest(unittest.makeSuite(test.__dict__[item]))
+      suite.addTests(loader.loadTestsFromTestCase(test.__dict__[item]))
   
 Config.load(setAsDefault = True)
 unittest.TextTestRunner(verbosity = 2).run(suite)

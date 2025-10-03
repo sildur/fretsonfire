@@ -22,11 +22,11 @@
 import pickle
 from io import BytesIO
 
-import Network
-import Engine
-import Log
-import World
-import Task
+from . import Network
+from . import Engine
+from . import Log
+from . import World
+from . import Task
 
 try:
   reversed

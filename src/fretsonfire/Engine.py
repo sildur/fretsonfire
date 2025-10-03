@@ -21,11 +21,11 @@
 
 import gc
 
-import Network
-import Object
-from World import World
-from Timer import Timer
-from Task import Task
+from . import Network
+from . import Object
+from .World import World
+from .Timer import Timer
+from .Task import Task
 
 class Engine:
   """Main task scheduler."""

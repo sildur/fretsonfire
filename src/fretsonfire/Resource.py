@@ -26,9 +26,9 @@ import time
 import shutil
 import stat
 
-from Task import Task
-import Log
-import Version
+from .Task import Task
+from . import Log
+from . import Version
 
 class Loader(Thread):
   def __init__(self, target, name, function, resultQueue, loaderSemaphore, onLoad = None):

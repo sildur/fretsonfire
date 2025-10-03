@@ -20,7 +20,7 @@
 #####################################################################
 
 from OpenGL.GL import glColor4f
-import Config
+from . import Config
 
 # read the color scheme from the config file
 Config.define("theme", "background_color",  str, "#330000")

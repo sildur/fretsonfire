@@ -19,13 +19,13 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import Network
-import Engine
-import Log
+from . import Network
+from . import Engine
+from . import Log
 import pickle
 
-from Session import ServerSession, MessageBroker
-from World import WorldServer
+from .Session import ServerSession, MessageBroker
+from .World import WorldServer
 
 class Server(Network.Server, Engine.Task):
   def __init__(self, engine):

@@ -19,10 +19,10 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Player import Player
-from Session import MessageHandler, Message
-import Network
-import SceneFactory
+from .Player import Player
+from .Session import MessageHandler, Message
+from . import Network
+from . import SceneFactory
 
 STARTUP_SCENE = "SongChoosingScene"
 
