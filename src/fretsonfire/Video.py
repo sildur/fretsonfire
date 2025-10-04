@@ -29,40 +29,52 @@ class Video:
     self.screen     = None
     self.caption    = caption
     self.fullscreen = False
-    self.flags      = True
+    self.flags      = pygame.OPENGL | pygame.DOUBLEBUF
+    self._baseFlags = pygame.OPENGL | pygame.DOUBLEBUF
+    self._multisamples = 0
+    self._displayInitialized = False
 
-  def setMode(self, resolution, fullscreen = False, flags = pygame.OPENGL | pygame.DOUBLEBUF,
-              multisamples = 0):
-    if fullscreen:
-      flags |= pygame.FULLSCREEN
-      
-    self.flags      = flags
-    self.fullscreen = fullscreen
+  def _ensureDisplayInitialized(self):
+    if not self._displayInitialized or not pygame.display.get_init():
+      pygame.display.init()
+      self._displayInitialized = True
 
-    try:    
-      pygame.display.quit()
-    except:
-      pass
-      
-    pygame.display.init()
-    
+  def _configureGlAttributes(self, multisamples):
     pygame.display.gl_set_attribute(pygame.GL_RED_SIZE,   8)
     pygame.display.gl_set_attribute(pygame.GL_GREEN_SIZE, 8)
     pygame.display.gl_set_attribute(pygame.GL_BLUE_SIZE,  8)
     pygame.display.gl_set_attribute(pygame.GL_ALPHA_SIZE, 8)
-      
+
     if multisamples:
-      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 1);
-      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, multisamples);
+      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 1)
+      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, multisamples)
+    else:
+      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 0)
+      pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, 0)
+
+  def setMode(self, resolution, fullscreen = False, flags = pygame.OPENGL | pygame.DOUBLEBUF,
+              multisamples = 0):
+    requestedFullscreen = fullscreen or bool(flags & pygame.FULLSCREEN)
+    baseFlags = flags & ~pygame.FULLSCREEN
+    if requestedFullscreen:
+      flags = baseFlags | pygame.FULLSCREEN
+    else:
+      flags = baseFlags
+
+    self._ensureDisplayInitialized()
+
+    self._baseFlags = baseFlags
+    self.flags      = flags
+    self.fullscreen = requestedFullscreen
 
     try:
+      self._configureGlAttributes(multisamples)
       self.screen = pygame.display.set_mode(resolution, flags)
     except Exception as e:
       Log.error(str(e))
       if multisamples:
         Log.warn("Video setup failed. Trying without antialiasing.")
-        pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 0);
-        pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, 0);
+        self._configureGlAttributes(0)
         multisamples = 0
         self.screen = pygame.display.set_mode(resolution, flags)
       else:
@@ -71,6 +83,8 @@ class Video:
 
     pygame.display.set_caption(self.caption)
     pygame.mouse.set_visible(False)
+
+    self._multisamples = multisamples
 
     if multisamples:
       try:
@@ -82,8 +96,9 @@ class Video:
     
   def toggleFullscreen(self):
     assert self.screen
-    
-    return pygame.display.toggle_fullscreen()
+
+    resolution = self.screen.get_size()
+    return self.setMode(resolution, not self.fullscreen, self._baseFlags, self._multisamples)
 
   def flip(self):
     pygame.display.flip()
