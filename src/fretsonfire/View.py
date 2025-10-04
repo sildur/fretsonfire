@@ -34,9 +34,9 @@ from OpenGL.GL import (
   glViewport,
 )
 
-import Log
+from . import Log
 
-from Task import Task
+from .Task import Task
 
 class Layer(Task):
   def render(self, visibility, topMost):

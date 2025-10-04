@@ -20,8 +20,8 @@
 #####################################################################
 
 import unittest
-from GameEngine import GameEngine
-from View import Layer
+from .GameEngine import GameEngine
+from .View import Layer
 
 class TestLayer(Layer):
   def __init__(self):

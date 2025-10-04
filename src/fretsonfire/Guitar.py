@@ -19,10 +19,10 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import Player
-from Song import Note, Tempo
-from Mesh import Mesh
-import Theme
+from . import Player
+from .Song import Note, Tempo
+from .Mesh import Mesh
+from . import Theme
 
 from OpenGL.GL import *
 import math

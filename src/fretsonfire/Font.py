@@ -24,7 +24,7 @@ import numpy
 from OpenGL.GL import *
 import sys
 
-from Texture import Texture, TextureAtlas, TextureAtlasFullException
+from .Texture import Texture, TextureAtlas, TextureAtlasFullException
 
 class Font:
   """A texture-mapped font."""

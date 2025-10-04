@@ -20,11 +20,11 @@
 #####################################################################
 
 from OpenGL.GL import *
-from View import Layer
+from .View import Layer
 
 import gc
 import threading
-import Log
+from . import Log
 
 class DebugLayer(Layer):
   """A layer for showing some debug information."""
@@ -95,7 +95,7 @@ class DebugLayer(Layer):
       self.engine.view.resetProjection()
 
   def gcDump(self):
-    import World
+    from . import World
     before = len(gc.get_objects())
     coll   = gc.collect()
     after  = len(gc.get_objects())

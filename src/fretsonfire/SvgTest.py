@@ -20,8 +20,8 @@
 #####################################################################
 
 import unittest
-from GameEngine import GameEngine
-from Texture import Texture
+from .GameEngine import GameEngine
+from .Texture import Texture
 
 from OpenGL.GL import *
 from OpenGL.GLU import *

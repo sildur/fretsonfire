@@ -19,12 +19,12 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import Menu
-from Language import _
-import Dialogs
-import Config
-import Mod
-import Audio
+from . import Menu
+from .Language import _
+from . import Dialogs
+from . import Config
+from . import Mod
+from . import Audio
 
 import pygame
 

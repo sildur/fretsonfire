@@ -19,13 +19,13 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Input import KeyListener
-from Session import MessageHandler
-from Task import Task
-from Language import _
-import MainMenu
-import Svg
-import Dialogs
+from .Input import KeyListener
+from .Session import MessageHandler
+from .Task import Task
+from .Language import _
+from . import MainMenu
+from . import Svg
+from . import Dialogs
 
 class GameTask(Task, KeyListener, MessageHandler):
   def __init__(self, engine, session, drawMiniViews = False):
