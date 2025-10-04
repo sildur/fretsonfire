@@ -20,11 +20,11 @@
 #####################################################################
 
 import pygame
-import Log
-import Audio
+from . import Log
+from . import Audio
 
-from Task import Task
-from Player import Controls
+from .Task import Task
+from .Player import Controls
 
 class KeyListener:
   def keyPressed(self, key, unicode):

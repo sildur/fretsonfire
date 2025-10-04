@@ -24,15 +24,15 @@ from OpenGL.GL import *
 import math
 import colorsys
 
-from View import Layer
-from Input import KeyListener
-from GameTask import GameTask
-from Session import MessageHandler
-from Language import _
-import MainMenu
-import Dialogs
-import Player
-import Song
+from .View import Layer
+from .Input import KeyListener
+from .GameTask import GameTask
+from .Session import MessageHandler
+from .Language import _
+from . import MainMenu
+from . import Dialogs
+from . import Player
+from . import Song
 
 class Lobby(Layer, KeyListener, MessageHandler):
   def __init__(self, engine, session, singlePlayer = False, songName = None):

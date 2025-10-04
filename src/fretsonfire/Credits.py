@@ -24,13 +24,13 @@ from OpenGL.GL import *
 from OpenGL.GLU import *
 import math
 
-from View import Layer
-from Input import KeyListener
-from Language import _
-import MainMenu
-import Song
-import Version
-import Player
+from .View import Layer
+from .Input import KeyListener
+from .Language import _
+from . import MainMenu
+from . import Song
+from . import Version
+from . import Player
 
 class Element:
   """A basic element in the credits scroller."""

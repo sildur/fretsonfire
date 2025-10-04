@@ -19,14 +19,14 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Player import Player
-from View import BackgroundLayer
-from Session import MessageHandler, Message
-from Input import KeyListener
-from Camera import Camera
-import Network
-import Player
-import Config
+from .Player import Player
+from .View import BackgroundLayer
+from .Session import MessageHandler, Message
+from .Input import KeyListener
+from .Camera import Camera
+from . import Network
+from . import Player
+from . import Config
 
 from OpenGL.GL import *
 from OpenGL.GLU import *

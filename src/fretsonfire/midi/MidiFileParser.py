@@ -188,8 +188,8 @@ if __name__ == '__main__':
 #    
 #    
 #    # do parsing
-    from midi.MidiToText import MidiToText
-    from midi.RawInstreamFile import RawInstreamFile
+    from .MidiToText import MidiToText
+    from .RawInstreamFile import RawInstreamFile
 
     midi_in = MidiFileParser(RawInstreamFile(test_file), MidiToText())
     midi_in.parseMThdChunk()

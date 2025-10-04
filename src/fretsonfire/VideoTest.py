@@ -20,7 +20,7 @@
 #####################################################################
 
 import unittest
-from Video import Video
+from .Video import Video
 
 class VideoTest(unittest.TestCase):
   def testSetMode(self):

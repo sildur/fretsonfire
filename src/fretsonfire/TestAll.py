@@ -25,7 +25,7 @@
 import sys
 import os
 import unittest
-import Config
+from . import Config
 
 tests = []
 

@@ -20,8 +20,8 @@
 #####################################################################
 
 import os
-import Config
-from Language import _
+from . import Config
+from .Language import _
 
 def _getModPath(engine):
   return engine.resource.fileName("mods")
@@ -40,7 +40,7 @@ def getAvailableMods(engine):
   try:
     dirList = os.listdir(modPath)
   except OSError:
-    import Log
+    from . import Log
     Log.warn("Could not find mods directory")
     return []
   return [m for m in dirList if os.path.isdir(os.path.join(modPath, m)) and not m.startswith(".")]

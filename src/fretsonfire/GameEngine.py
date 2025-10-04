@@ -25,25 +25,25 @@ import os
 import sys
 from urllib.parse import urlparse
 
-from Engine import Engine, Task
-from Video import Video
-from Audio import Audio
-from View import View
-from Input import Input, KeyListener, SystemEventListener
-from Resource import Resource
-from Data import Data
-from Server import Server
-from Session import ClientSession
-from Svg import SvgContext, SvgDrawing, LOW_QUALITY, NORMAL_QUALITY, HIGH_QUALITY
-from Debug import DebugLayer
-from Language import _
-import Network
-import Log
-import Config
-import Dialogs
-import Theme
-import Version
-import Mod
+from .Engine import Engine, Task
+from .Video import Video
+from .Audio import Audio
+from .View import View
+from .Input import Input, KeyListener, SystemEventListener
+from .Resource import Resource
+from .Data import Data
+from .Server import Server
+from .Session import ClientSession
+from .Svg import SvgContext, SvgDrawing, LOW_QUALITY, NORMAL_QUALITY, HIGH_QUALITY
+from .Debug import DebugLayer
+from .Language import _
+from . import Network
+from . import Log
+from . import Config
+from . import Dialogs
+from . import Theme
+from . import Version
+from . import Mod
 
 # define configuration keys
 Config.define("engine", "tickrate",     float, 1.0)

@@ -22,8 +22,8 @@
 from configparser import ConfigParser
 from OpenGL.GL import *
 import math
-import Log
-import Theme
+from . import Log
+from . import Theme
 
 class Layer(object):
   """

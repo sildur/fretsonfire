@@ -23,17 +23,17 @@ from OpenGL.GL import *
 import math
 import socket
 
-from View import BackgroundLayer
-from Menu import Menu
-from Editor import Editor, Importer, GHImporter
-from Credits import Credits
-from Lobby import Lobby
-from Svg import SvgDrawing
-from Language import _
-import Dialogs
-import Config
-import Audio
-import Settings
+from .View import BackgroundLayer
+from .Menu import Menu
+from .Editor import Editor, Importer, GHImporter
+from .Credits import Credits
+from .Lobby import Lobby
+from .Svg import SvgDrawing
+from .Language import _
+from . import Dialogs
+from . import Config
+from . import Audio
+from . import Settings
 
 class MainMenu(BackgroundLayer):
   def __init__(self, engine, songName = None):

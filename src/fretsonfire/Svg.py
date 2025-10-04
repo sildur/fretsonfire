@@ -26,9 +26,9 @@ from OpenGL.GL import *
 from numpy import reshape, dot, transpose, identity, zeros, float32
 from math import sin, cos
 
-import Log
-import Config
-from Texture import Texture, TextureException
+from . import Log
+from . import Config
+from .Texture import Texture, TextureException
 
 # Amanith support is now deprecated
 #try:
@@ -39,7 +39,7 @@ from Texture import Texture, TextureException
 #  Log.warn("PyAmanith not found, SVG support disabled.")
 #  import DummyAmanith as amanith
 #  haveAmanith    = False
-import DummyAmanith as amanith
+from . import DummyAmanith as amanith
 haveAmanith = True
 
 # Add support for 'foo in attributes' syntax

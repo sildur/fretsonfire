@@ -19,19 +19,19 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Scene import SceneServer, SceneClient
-from Song import Note, TextEvent, PictureEvent, loadSong
-from Menu import Menu
-from Guitar import Guitar, KEYS
-from Language import _
-import Player
-import Dialogs
-import Data
-import Theme
-import View
-import Audio
-import Stage
-import Settings
+from .Scene import SceneServer, SceneClient
+from .Song import Note, TextEvent, PictureEvent, loadSong
+from .Menu import Menu
+from .Guitar import Guitar, KEYS
+from .Language import _
+from . import Player
+from . import Dialogs
+from . import Data
+from . import Theme
+from . import View
+from . import Audio
+from . import Stage
+from . import Settings
 
 import math
 import pygame

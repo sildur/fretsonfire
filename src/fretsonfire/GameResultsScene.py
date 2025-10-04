@@ -19,15 +19,15 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Scene import SceneServer, SceneClient
-from Menu import Menu
-import Player
-import Dialogs
-import Song
-import Data
-import Theme
-from Audio import Sound
-from Language import _
+from .Scene import SceneServer, SceneClient
+from .Menu import Menu
+from . import Player
+from . import Dialogs
+from . import Song
+from . import Data
+from . import Theme
+from .Audio import Sound
+from .Language import _
 
 import pygame
 import math

@@ -25,18 +25,18 @@ from OpenGL.GLU import *
 import math
 import colorsys
 
-from View import Layer
-from Input import KeyListener
-from Song import loadSong, createSong, Note, difficulties, DEFAULT_LIBRARY
-from Guitar import Guitar, KEYS
-from Camera import Camera
-from Menu import Menu, Choice
-from Language import _
-import MainMenu
-import Dialogs
-import Player
-import Theme
-import Log
+from .View import Layer
+from .Input import KeyListener
+from .Song import loadSong, createSong, Note, difficulties, DEFAULT_LIBRARY
+from .Guitar import Guitar, KEYS
+from .Camera import Camera
+from .Menu import Menu, Choice
+from .Language import _
+from . import MainMenu
+from . import Dialogs
+from . import Player
+from . import Theme
+from . import Log
 import shutil, os, struct, wave, tempfile
 from struct import unpack
 
