@@ -2,6 +2,32 @@
 
 <!-- version list -->
 
+## v1.5.6 (2025-10-04)
+
+### Bug Fixes
+
+- Restore integer division in timing and input code
+  ([`c86a776`](https://github.com/sildur/fretsonfire/commit/c86a77631a8ef4a6a44733f04b0cbdc443459b3c))
+
+### Chores
+
+- Add agent guide and markdown install docs
+  ([`c69e472`](https://github.com/sildur/fretsonfire/commit/c69e4729d9a5837fedfd3f6ffe53c951d3da8323))
+
+### Documentation
+
+- Update todo
+  ([`9282860`](https://github.com/sildur/fretsonfire/commit/9282860af6c048422bad0c7c15e5ba47f161e38c))
+
+### Refactoring
+
+- Use explicit relative imports
+  ([`7c2a197`](https://github.com/sildur/fretsonfire/commit/7c2a1977faf7f32ef1d3935216041c1672e42258))
+
+- Use explicit relative imports
+  ([`088513f`](https://github.com/sildur/fretsonfire/commit/088513ff36a7a7895688b2511855db7a6b10b673))
+
+
 ## v1.5.5 (2025-10-03)
 
 ### Bug Fixes
