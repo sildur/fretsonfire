@@ -21,11 +21,7 @@
 
 from .Scene import SceneServer, SceneClient
 from .Menu import Menu
-from . import Player
-from . import Dialogs
-from . import Song
-from . import Data
-from . import Theme
+from . import Player, Dialogs, Song, Data, Theme
 from .Audio import Sound
 from .Language import _
 

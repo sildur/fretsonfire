@@ -20,10 +20,7 @@
 #####################################################################
 
 from .Scene import SceneServer, SceneClient
-from . import Player
-from . import Dialogs
-from . import Song
-from . import Config
+from . import Player, Dialogs, Song, Config
 from .Language import _
 
 # save chosen song into config file

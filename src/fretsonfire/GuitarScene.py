@@ -24,14 +24,7 @@ from .Song import Note, TextEvent, PictureEvent, loadSong
 from .Menu import Menu
 from .Guitar import Guitar, KEYS
 from .Language import _
-from . import Player
-from . import Dialogs
-from . import Data
-from . import Theme
-from . import View
-from . import Audio
-from . import Stage
-from . import Settings
+from . import Player, Dialogs, Data, Theme, View, Audio, Stage, Settings
 
 import math
 import pygame

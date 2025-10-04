@@ -30,14 +30,14 @@ class Video:
     self.caption    = caption
     self.fullscreen = False
     self.flags      = True
+    self.multisamples = 0
 
   def setMode(self, resolution, fullscreen = False, flags = pygame.OPENGL | pygame.DOUBLEBUF,
               multisamples = 0):
     if fullscreen:
       flags |= pygame.FULLSCREEN
       
-    self.flags      = flags
-    self.fullscreen = fullscreen
+    target_flags = flags | pygame.FULLSCREEN if fullscreen else flags & ~pygame.FULLSCREEN
 
     try:    
       pygame.display.quit()
@@ -56,7 +56,7 @@ class Video:
       pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, multisamples);
 
     try:
-      self.screen = pygame.display.set_mode(resolution, flags)
+      self.screen = pygame.display.set_mode(resolution, target_flags)
     except Exception as e:
       Log.error(str(e))
       if multisamples:
@@ -64,7 +64,7 @@ class Video:
         pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLEBUFFERS, 0);
         pygame.display.gl_set_attribute(pygame.GL_MULTISAMPLESAMPLES, 0);
         multisamples = 0
-        self.screen = pygame.display.set_mode(resolution, flags)
+        self.screen = pygame.display.set_mode(resolution, target_flags)
       else:
         Log.error("Video setup failed. Make sure your graphics card supports 32 bit display modes.")
         raise
@@ -78,12 +78,39 @@ class Video:
       except:
         pass
 
+    self.flags        = target_flags
+    self.fullscreen   = fullscreen
+    self.multisamples = multisamples
+
     return bool(self.screen)
     
   def toggleFullscreen(self):
     assert self.screen
-    
-    return pygame.display.toggle_fullscreen()
+
+    resolution = self.screen.get_size()
+    previous_flags = self.flags
+    previous_fullscreen = self.fullscreen
+    previous_multisamples = self.multisamples
+
+    fullscreen = not previous_fullscreen
+
+    flags = previous_flags
+    if fullscreen:
+      flags |= pygame.FULLSCREEN
+    else:
+      flags &= ~pygame.FULLSCREEN
+
+    try:
+      return bool(self.setMode(resolution, fullscreen = fullscreen,
+                               flags = flags, multisamples = previous_multisamples))
+    except Exception as error:
+      Log.warn(f"Unable to toggle fullscreen: {error}")
+      try:
+        self.setMode(resolution, fullscreen = previous_fullscreen,
+                     flags = previous_flags, multisamples = previous_multisamples)
+      except Exception:
+        pass
+      return False
 
   def flip(self):
     pygame.display.flip()
