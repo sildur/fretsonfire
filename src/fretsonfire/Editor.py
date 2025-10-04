@@ -334,7 +334,7 @@ class Editor(Layer, KeyListener):
       else:
         status = _("Stopped")
 
-      t = "%d.%02d'%03d" % (self.pos / 60000, (self.pos % 60000) / 1000, self.pos % 1000)
+      t = "%d.%02d'%03d" % (self.pos // 60000, (self.pos % 60000) // 1000, self.pos % 1000)
       font.render(t, (.05, .05 - h / 2))
       font.render(status, (.05, .05 + h / 2))
       font.render(unicode(self.song.difficulty), (.05, .05 + 3 * h / 2))

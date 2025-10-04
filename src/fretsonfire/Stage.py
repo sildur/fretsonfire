@@ -333,7 +333,7 @@ class Stage(object):
     if quarterBeat > self.quarterBeat:
       self.triggerQuarterBeat(pos, quarterBeat)
 
-    beat = quarterBeat / 4
+    beat = quarterBeat // 4
 
     if beat > self.beat:
       self.triggerBeat(pos, beat)

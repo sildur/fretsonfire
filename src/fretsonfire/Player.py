@@ -197,6 +197,6 @@ class Player(object):
     
   def getScoreMultiplier(self):
     try:
-      return SCORE_MULTIPLIER.index((self.streak / 10) * 10) + 1
+      return SCORE_MULTIPLIER.index((self.streak // 10) * 10) + 1
     except ValueError:
       return len(SCORE_MULTIPLIER)
