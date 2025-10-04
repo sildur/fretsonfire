@@ -58,7 +58,14 @@ Released in 1.1.324:
  - don't allow zero fps (FIXED 303)
  - proper mod support (FIXED 321)
 
-Release in 1.2.512:
+Released in 1.2.438:
+
+ - add custom fretboard and background support (FIXED 438)
+ - fix screw-up volume (FIXED 438)
+ - fix volume saturation issue with GH2 tracks (FIXED 438)
+ - add rhythm guitar playing support (FIXED 438)
+
+Released in 1.2.512:
 
  - abstract pygame mixer behind the Audio class (FIXED 320)
  - song folder support (FIXED 327)
@@ -83,26 +90,23 @@ Release in 1.2.512:
  - fix importing two missing songs on GH1 and GH2 disks (FIXED 345)
  - tapping support, aka hammer-ons and pull-ofs (FIXED 409)
 
+Released in 1.3.110:
+
+ - texture the fretboard lines (FIXED 110)
+ - switch to py2exe for win32 builds (FIXED 110)
+ - fix source distribution builds (FIXED 110)
+ - add experimental pyglet audio support (FIXED 110)
+ - fix the py2exe restart issue by migrating to the new build system (FIXED 110)
+
 Todo:
 
  - better documentation for the source
- - add custom fretboard and background support
- - support for freetar sng files
- - support for gda files
- - support for dtx files
- - support for midi controllers
- - apply alex's patches
- - screw-up volume doesn't work?
+ - fix LightGraphics mod
+ - support for MIDI controllers
  - add a song testing mode to the editor
- - fix volume saturation issue with GH2 tracks
- - add rhythm guitar playing support
- - lyrics support
-
- - removed amanith dependency
- - fretboard lines are now textured
- - switched to py2exe for win32 builds
- - source distribution building works now
- - experimental pyglet audio support
- - TODO: fix py2exe restarting
- - TODO: fix lightgraphics mod
+ - support for Freetar .sng files
+ - support for .gda files
+ - support for .dtx files
+ - add lyrics support
+ - apply Alex's patches
 

@@ -51,10 +51,11 @@ Python dependencies—`pygame`, `PyOpenGL`, `numpy`, `Pillow`, and
 
        python3 -m venv .venv
        source .venv/bin/activate    # Windows: .venv\Scripts\activate
-3. Install dependencies in editable mode:
+3. Install dependencies in editable mode (append `[tests]` if you plan to run
+   the test suite):
 
        python -m pip install --upgrade pip
-       python -m pip install -e .
+       python -m pip install -e .[tests]
 4. Start the game:
 
        python -m fretsonfire
@@ -65,7 +66,8 @@ Python dependencies—`pygame`, `PyOpenGL`, `numpy`, `Pillow`, and
 
 ## Run the Test Suite
 
-Install the optional test tools:
+If you did not install the `[tests]` extras earlier, install the optional test
+tools now:
 
     python -m pip install -e .[tests]
 
