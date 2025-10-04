@@ -205,7 +205,7 @@ class GetKey(Layer, KeyListener):
       Theme.setSelectedColor(1 - v)
 
       if self.key is not None:
-        text = pygame.key.name(self.key).capitalize()
+        text = self.engine.input.formatKeyName(self.key).capitalize()
         pos = wrapText(font, (.1, (pos[1] + v) + .08 + v / 4), text)
       
     finally:
