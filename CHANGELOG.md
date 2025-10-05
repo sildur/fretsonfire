@@ -2,6 +2,19 @@
 
 <!-- version list -->
 
+## v1.5.7 (2025-10-05)
+
+### Build System
+
+- Disable rofiles fuse when packaging flatpak
+  ([`2ef6f5d`](https://github.com/sildur/fretsonfire/commit/2ef6f5d7c499d2ded5092ad868d53959c8897ae9))
+
+### Performance Improvements
+
+- Lazily import glColor4f in theme color setters
+  ([`7cd6a1c`](https://github.com/sildur/fretsonfire/commit/7cd6a1cab505e71d28b84cea3e07f3e371d507d4))
+
+
 ## v1.5.6 (2025-10-04)
 
 ### Bug Fixes
