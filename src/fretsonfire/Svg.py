@@ -20,7 +20,7 @@
 #####################################################################
 
 import re
-import os
+from io import BytesIO
 from xml import sax
 from OpenGL.GL import *
 from numpy import reshape, dot, transpose, identity, zeros, float32
@@ -40,7 +40,9 @@ from Texture import Texture, TextureException
 #  import DummyAmanith as amanith
 #  haveAmanith    = False
 import DummyAmanith as amanith
-haveAmanith = True
+import SvgColors
+
+import pygame
 
 # Add support for 'foo in attributes' syntax
 if not hasattr(sax.xmlreader.AttributesImpl, '__contains__'):
@@ -536,26 +538,47 @@ class SvgDrawing:
     self.context = context
     self.cache = None
     self.transform = SvgTransform()
+    self._svgSourcePath = None
+    self._svgSourceBytes = None
+    self._isSvgTexture = False
 
     # Detect the type of data passed in
     if hasattr(svgData, 'read'):
-      self.svgData = svgData.read()
+      data = svgData.read()
+      if isinstance(data, str):
+        data = data.encode(Config.encoding or 'utf-8')
+      self.svgData = data
+      self._svgSourceBytes = data
+      try:
+        self.texture = self._rasterizeSvg()
+      except Exception as exc:
+        e = "Unable to render in-memory SVG data using pygame: %s" % exc
+        Log.error(e)
+        raise RuntimeError(e) from exc
+      self._isSvgTexture = True
     elif isinstance(svgData, str):
-      bitmapFile = svgData.replace(".svg", ".png")
       # Load PNG files directly
       if svgData.endswith(".png"):
         self.texture = Texture(svgData)
-      # Check whether we have a prerendered bitmap version of the SVG file
-      elif svgData.endswith(".svg") and os.path.exists(bitmapFile):
-        Log.debug("Loading cached bitmap '%s' instead of '%s'." % (bitmapFile, svgData))
-        self.texture = Texture(bitmapFile)
-      else:
-        if not haveAmanith:
-          e = "PyAmanith support is deprecated and you are trying to load an SVG file."
+        self._isSvgTexture = False
+      elif svgData.endswith(".svg"):
+        self._svgSourcePath = svgData
+        with open(svgData, 'rb') as handle:
+          data = handle.read()
+        self.svgData = data
+        self._svgSourceBytes = data
+        try:
+          Log.debug("Rendering SVG file '%s' to texture using pygame's SDL2_image backend." % (svgData))
+          self.texture = self._rasterizeSvg()
+          self._isSvgTexture = True
+        except Exception as exc:
+          e = "Unable to rasterize SVG '%s': %s" % (svgData, exc)
           Log.error(e)
-          raise RuntimeError(e)
-        Log.debug("Loading SVG file '%s'." % (svgData))
-        self.svgData = open(svgData, 'r', encoding=Config.encoding).read()
+          raise RuntimeError(e) from exc
+      else:
+        e = "Unsupported texture format '%s'." % svgData
+        Log.error(e)
+        raise RuntimeError(e)
 
     # Make sure we have a valid texture
     if not self.texture:
@@ -574,12 +597,15 @@ class SvgDrawing:
     del self.svgData
 
   def convertToTexture(self, width, height):
-    if self.texture:
+    if self.texture and not self._isSvgTexture:
       return
 
-    e = "SVG drawing does not have a valid texture image."
-    Log.error(e)
-    raise RuntimeError(e)
+    try:
+      self.texture = self._rasterizeSvg(width, height)
+    except Exception as exc:
+      e = "Unable to convert SVG drawing to texture: %s" % exc
+      Log.error(e)
+      raise RuntimeError(e) from exc
 
     #try:
     #  self.texture = Texture()
@@ -601,6 +627,39 @@ class SvgDrawing:
     #  self.context.setRenderingQuality(quality)
     #except TextureException, e:
     #  Log.warn("Unable to convert SVG drawing to texture: %s" % str(e))
+
+  def _rasterizeSvg(self, width = None, height = None):
+    try:
+      if self._svgSourcePath:
+        surface = pygame.image.load(self._svgSourcePath)
+      else:
+        if self._svgSourceBytes is not None:
+          source_bytes = self._svgSourceBytes
+        elif isinstance(self.svgData, (bytes, bytearray)):
+          source_bytes = bytes(self.svgData)
+        else:
+          raise RuntimeError("SVG source data is not available for rasterization")
+        buffer = BytesIO(source_bytes)
+        try:
+          surface = pygame.image.load(buffer, "<svg>")
+        finally:
+          buffer.close()
+    except pygame.error as exc:
+      raise RuntimeError("pygame was unable to decode the SVG: %s" % exc) from exc
+
+    if width or height:
+      original_width, original_height = surface.get_size()
+      target_width = int(width) if width else original_width
+      target_height = int(height) if height else original_height
+      if (target_width, target_height) != surface.get_size():
+        surface = pygame.transform.smoothscale(surface, (target_width, target_height))
+
+    texture = Texture()
+    has_alpha = bool(surface.get_flags() & pygame.SRCALPHA)
+    texture.loadSurface(surface, alphaChannel = has_alpha)
+    texture.name = self._svgSourcePath or texture.name
+    self._isSvgTexture = True
+    return texture
 
   def _getEffectiveTransform(self):
     transform = SvgTransform(self.transform)
