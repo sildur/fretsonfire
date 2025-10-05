@@ -3,3 +3,4 @@
 - Commits must follow the Conventional Commits specification (for example, `fix: pause countdown when menu open`).
 - Target Python 3.13; do not introduce compatibility shims for older versions.
 - Always run `python -m pytest` in the project virtualenv before handing work back; headless SDL environment is configured automatically via `tests/conftest.py`.
+- Before calling `make_pr`, reread the final diff and update the PR title/summary so they describe only the changes that remain (remove bullets for reverted or dropped work).
