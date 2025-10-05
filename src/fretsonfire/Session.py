@@ -22,11 +22,9 @@
 import pickle
 from io import BytesIO
 
-import Network
-import Engine
-import Log
-import World
-import Task
+from . import Network
+from . import Log
+from . import Task
 
 try:
   reversed
@@ -197,6 +195,8 @@ class ConnectionLost(Message): pass
 class ClientSession(BaseSession):
   def __init__(self, engine):
     BaseSession.__init__(self, engine = engine, broker = MessageBroker())
+    from . import World
+
     self.world = World.WorldClient(engine, session = self)
     self.broker.addMessageHandler(self.world)
     self.closed = False

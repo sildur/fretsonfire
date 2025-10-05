@@ -25,7 +25,7 @@ import struct
 import time
 from io import BytesIO
 
-import Log
+from . import Log
 
 PORT = 12345
 
@@ -113,6 +113,8 @@ class Connection(asyncore.dispatcher):
         data = self.recv(2)
         if data:
           self._receivedSizeField = struct.unpack("H", data)[0]
+          self._packet.seek(0)
+          self._packet.truncate(0)
         return
       data = self.recv(self._receivedSizeField)
       if data:
@@ -134,6 +136,9 @@ class Connection(asyncore.dispatcher):
     return len(self._buffer) > 0
 
   def sendPacket(self, packet):
+    if isinstance(packet, str):
+      # Preserve legacy callers that still pass str packets under Python 3
+      packet = packet.encode("utf-8")
     self._buffer.append(packet)
 
   def handlePacket(self, packet):

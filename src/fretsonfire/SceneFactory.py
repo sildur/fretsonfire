@@ -21,13 +21,30 @@
 
 # Scenes
 import glob
+import importlib
+import sys
 
 # Static list for now to ease building
 #scenes = [n.replace(".py", "") for n in glob.glob("*Scene.py")]
 scenes = ["GameResultsScene", "GuitarScene", "SongChoosingScene"]
 
 def _import(name):
-  globals()[name] = __import__(name)
+  """Import a scene module, preferring package-qualified imports."""
+  if __package__:
+    qualified_name = f"{__package__}.{name}"
+    try:
+      module = importlib.import_module(qualified_name)
+    except ModuleNotFoundError as exc:
+      if exc.name != qualified_name:
+        raise
+    else:
+      globals()[name] = module
+      sys.modules.setdefault(name, module)
+      return module
+
+  module = importlib.import_module(name)
+  globals()[name] = module
+  return module
 
 def create(engine, name, owner, server = None, session = None, **args):
   assert session or server

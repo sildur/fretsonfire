@@ -1,5 +1,3 @@
-# -*- coding: ISO-8859-1 -*-
-
 # std library
 from struct import unpack
 

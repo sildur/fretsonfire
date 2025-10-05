@@ -36,11 +36,11 @@ codecs.register(lambda encoding: encodings.utf_8.getregentry())
 assert codecs.lookup("iso-8859-1")
 assert codecs.lookup("utf-8")
 
-from GameEngine import GameEngine
-from MainMenu import MainMenu
-import Log
-import Config
-import Version
+from .GameEngine import GameEngine
+from .MainMenu import MainMenu
+from . import Log
+from . import Config
+from . import Version
 
 def parse_args(argv):
   parser = argparse.ArgumentParser(
@@ -66,7 +66,7 @@ def main(argv=None):
   args = parse_args(argv)
 
   if args.verbose:
-    Log.quiet = False
+    Log.set_quiet(False)
 
   song_name = args.song_name
   engine = None

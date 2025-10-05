@@ -22,8 +22,8 @@
 import unittest
 import time
 
-from Scene import Scene
-from Resource import Resource
+from .Scene import Scene
+from .Resource import Resource
 
 class CityScene(Scene):
   def __init__(self, id = None, manager = None):

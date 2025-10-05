@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
   workflow_dispatch:
 
 # default: least privileged permissions across all jobs
@@ -11,7 +14,29 @@ permissions:
   contents: read
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup | Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Setup | Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+
+      - name: Install | Project with test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install '.[tests]'
+
+      - name: Test | Run pytest
+        run: python -m pytest
+
   release:
+    needs: tests
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       released: ${{ steps.release.outputs.released }}
@@ -116,7 +141,7 @@ jobs:
       contents: write
     strategy:
       matrix:
-        target: [Windows, macOS, Debian, Fedora]
+        target: [Windows, macOS, Debian, Fedora, Flatpak]
         include:
           - target: Windows
             output-format: "app"
@@ -138,6 +163,15 @@ jobs:
             pre-command: "sudo apt -y install socat"
             briefcase-run-prefix: "xvfb-run"
             briefcase-args: "--target fedora"
+          - target: Flatpak
+            platform: "Linux"
+            output-format: "flatpak"
+            runs-on: "ubuntu-latest"
+            pre-command: |
+              sudo apt -y update
+              sudo apt -y install flatpak flatpak-builder
+            briefcase-run-prefix: "xvfb-run"
+            briefcase-args: ""
     runs-on: ${{ matrix.runs-on }}
 
     steps:
@@ -175,7 +209,7 @@ jobs:
           briefcase package \
             ${{ matrix.platform || matrix.target }} \
             ${{ matrix.output-format }} \
-            --update --adhoc-sign --no-input --log \
+            --adhoc-sign --no-input --log \
             ${{ matrix.briefcase-args }}
 
       - name: Upload | Distribution Artifacts (${{ matrix.target }})

@@ -19,12 +19,9 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Scene import SceneServer, SceneClient
-import Player
-import Dialogs
-import Song
-import Config
-from Language import _
+from .Scene import SceneServer, SceneClient
+from . import Player, Dialogs, Song, Config
+from .Language import _
 
 # save chosen song into config file
 Config.define("game", "selected_library",  str, "")

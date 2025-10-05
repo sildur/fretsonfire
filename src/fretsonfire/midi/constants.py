@@ -1,5 +1,3 @@
-# -*- coding: ISO-8859-1 -*-
-
 ###################################################
 ## Definitions of the different midi events
 

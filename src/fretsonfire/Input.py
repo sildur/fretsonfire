@@ -20,11 +20,11 @@
 #####################################################################
 
 import pygame
-import Log
-import Audio
+from . import Log
+from . import Audio
 
-from Task import Task
-from Player import Controls
+from .Task import Task
+from .Player import Controls
 
 class KeyListener:
   def keyPressed(self, key, unicode):
@@ -166,7 +166,7 @@ class Input(Task):
   def decodeJoystickHat(self, id):
     id -= 0x30000
     v = id & 0xf
-    x, y = (v % 3) - 1, (v / 3) - 1
+    x, y = (v % 3) - 1, (v // 3) - 1
     return (id >> 8, (id >> 4) & 0xf, (x, y))
 
   def getKeyName(self, id):

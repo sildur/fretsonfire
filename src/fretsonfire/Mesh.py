@@ -21,7 +21,7 @@
 
 from OpenGL.GL import *
 
-import Collada
+from . import Collada
 
 class Mesh:
   def __init__(self, fileName):

@@ -19,9 +19,9 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import Config
-import Version
-import Log
+from . import Config
+from . import Version
+from . import Log
 import gettext
 import os
 import glob

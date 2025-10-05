@@ -28,19 +28,19 @@ import math
 import os
 import fnmatch
 
-from View import Layer, BackgroundLayer
-from Input import KeyListener
-from Camera import Camera
-from Mesh import Mesh
-from Menu import Menu
-from Language import _
-from Texture import Texture
-import Theme
-import Log
-import Song
-import Data
-import Player
-import Guitar
+from .View import Layer, BackgroundLayer
+from .Input import KeyListener
+from .Camera import Camera
+from .Mesh import Mesh
+from .Menu import Menu
+from .Language import _
+from .Texture import Texture
+from . import Theme
+from . import Log
+from . import Song
+from . import Data
+from . import Player
+from . import Guitar
 
 def wrapText(font, pos, text, rightMargin = 0.9, scale = 0.002, visibility = 0.0, hide = 0, hidestring = ""):
   """

@@ -20,7 +20,7 @@
 #####################################################################
 
 import unittest
-from GameEngine import GameEngine
+from .GameEngine import GameEngine
 
 class EngineTest(unittest.TestCase):
   def testNetworking(self):

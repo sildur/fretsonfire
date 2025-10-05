@@ -1,5 +1,3 @@
-# -*- coding: ISO-8859-1 -*-
-
 from .RawInstreamFile import RawInstreamFile
 from .MidiFileParser import MidiFileParser
 

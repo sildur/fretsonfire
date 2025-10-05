@@ -19,15 +19,15 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from Font import Font
-from Texture import Texture
-from Svg import SvgDrawing, SvgContext
-from Texture import Texture
-from Audio import Sound
-from Language import _
+from .Font import Font
+from .Texture import Texture
+from .Svg import SvgDrawing, SvgContext
+from .Texture import Texture
+from .Audio import Sound
+from .Language import _
 import random
-import Language
-import Config
+from . import Language
+from . import Config
 
 # these constants define a few customized letters in the default font
 STAR1 = '\x10'

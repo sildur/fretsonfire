@@ -20,10 +20,9 @@
 #####################################################################
 
 import pygame
-import Log
-import time
+from . import Log
 import sys
-from Task import Task
+from .Task import Task
 
 class Audio(Task):
   def __init__(self):

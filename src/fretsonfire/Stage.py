@@ -22,8 +22,8 @@
 from configparser import ConfigParser
 from OpenGL.GL import *
 import math
-import Log
-import Theme
+from . import Log
+from . import Theme
 
 class Layer(object):
   """
@@ -333,7 +333,7 @@ class Stage(object):
     if quarterBeat > self.quarterBeat:
       self.triggerQuarterBeat(pos, quarterBeat)
 
-    beat = quarterBeat / 4
+    beat = quarterBeat // 4
 
     if beat > self.beat:
       self.triggerBeat(pos, beat)

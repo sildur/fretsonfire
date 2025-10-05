@@ -21,8 +21,8 @@
 
 from __future__ import division
 
-import Log
-import Config
+from . import Log
+from . import Config
 from PIL import Image
 import pygame
 from io import BytesIO

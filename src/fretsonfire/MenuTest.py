@@ -20,8 +20,8 @@
 #####################################################################
 
 import unittest
-from GameEngine import GameEngine
-from Menu import Menu
+from .GameEngine import GameEngine
+from .Menu import Menu
 
 subMenu = [
   ("Bar 1", lambda: 0),

@@ -23,12 +23,12 @@ import pygame
 from OpenGL.GL import *
 import math
 
-from View import Layer
-from Input import KeyListener
-import Data
-import Theme
-import Dialogs
-import Player
+from .View import Layer
+from .Input import KeyListener
+from . import Data
+from . import Theme
+from . import Dialogs
+from . import Player
 
 class Choice:
   def __init__(self, text, callback, values = None, valueIndex = 0):

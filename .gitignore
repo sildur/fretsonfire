@@ -63,3 +63,5 @@ logs/
 
 # Compiled translation files
 /src/fretsonfire/data/translations/*mo
+
+/.fretsonfire

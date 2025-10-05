@@ -19,22 +19,22 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import midi
-import Log
-import Audio
+from . import midi
+from . import Log
+from . import Audio
 from configparser import ConfigParser
 import os
 import re
 import shutil
-import Config
+from . import Config
 import hashlib
 import binascii
-import Cerealizer
+from . import Cerealizer
 from urllib.parse import urlencode
 from urllib.request import urlopen
-import Version
-import Theme
-from Language import _
+from . import Version
+from . import Theme
+from .Language import _
 
 DEFAULT_LIBRARY         = "songs"
 
@@ -492,13 +492,14 @@ class Song(object):
 
   def save(self):
     self.info.save()
-    f = open(self.noteFileName + ".tmp", "wb")
+    tmp_note_path = str(self.noteFileName) + ".tmp"
+    f = open(tmp_note_path, "wb")
     midiOut = MidiWriter(self, midi.MidiOutFile(f))
     midiOut.write()
     f.close()
 
     # Rename the output file after it has been succesfully written
-    shutil.move(self.noteFileName + ".tmp", self.noteFileName)
+    shutil.move(tmp_note_path, self.noteFileName)
 
   def play(self, start = 0.0):
     self.start = start

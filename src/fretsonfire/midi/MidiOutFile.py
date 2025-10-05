@@ -1,5 +1,3 @@
-# -*- coding: ISO-8859-1 -*-
-
 from .MidiOutStream import MidiOutStream
 from .RawOutstreamFile import RawOutstreamFile
 

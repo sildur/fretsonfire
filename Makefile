@@ -22,6 +22,8 @@ linux-packages:
 	briefcase build linux --target debian --update
 	briefcase package linux --target debian --update
 	briefcase package linux --target fedora --update
+        briefcase build linux flatpak
+        briefcase package linux flatpak
 else ifeq ($(PLATFORM),Darwin)
 # macOS hosts
 build: mac-packages

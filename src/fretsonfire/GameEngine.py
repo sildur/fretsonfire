@@ -25,25 +25,25 @@ import os
 import sys
 from urllib.parse import urlparse
 
-from Engine import Engine, Task
-from Video import Video
-from Audio import Audio
-from View import View
-from Input import Input, KeyListener, SystemEventListener
-from Resource import Resource
-from Data import Data
-from Server import Server
-from Session import ClientSession
-from Svg import SvgContext, SvgDrawing, LOW_QUALITY, NORMAL_QUALITY, HIGH_QUALITY
-from Debug import DebugLayer
-from Language import _
-import Network
-import Log
-import Config
-import Dialogs
-import Theme
-import Version
-import Mod
+from .Engine import Engine, Task
+from .Video import Video
+from .Audio import Audio
+from .View import View
+from .Input import Input, KeyListener, SystemEventListener
+from .Resource import Resource
+from .Data import Data
+from .Server import Server
+from .Session import ClientSession
+from .Svg import SvgContext, SvgDrawing, LOW_QUALITY, NORMAL_QUALITY, HIGH_QUALITY
+from .Debug import DebugLayer
+from .Language import _
+from . import Network
+from . import Log
+from . import Config
+from . import Dialogs
+from . import Theme
+from . import Version
+from . import Mod
 
 # define configuration keys
 Config.define("engine", "tickrate",     float, 1.0)
@@ -138,12 +138,9 @@ class GameEngine(Engine):
     tickrate     = self.config.get("engine", "tickrate")
     Engine.__init__(self, fps = fps, tickrate = tickrate)
     
-    pygame.init()
-    
     self.title             = _("Frets on Fire")
     self.restartRequested  = False
     self.handlingException = False
-    self.video             = Video(self.title)
     self.audio             = Audio()
 
     Log.debug("Initializing audio.")
@@ -151,9 +148,10 @@ class GameEngine(Engine):
     bits         = self.config.get("audio", "bits")
     stereo       = self.config.get("audio", "stereo")
     bufferSize   = self.config.get("audio", "buffersize")
-    
+
     self.audio.pre_open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
     pygame.init()
+    self.video             = Video(self.title)
     self.audio.open(frequency = frequency, bits = bits, stereo = stereo, bufferSize = bufferSize)
 
     Log.debug("Initializing video.")
