@@ -72,6 +72,7 @@ author = "Roberto Romero"
 author_email = "roberto@nirae.at"
 
 [tool.briefcase.app.fretsonfire]
+icon = "src/fretsonfire/data/icon"
 formal_name = "Frets on Fire"
 description = "Frets on Fire is a game of musical skill and fast fingers."
 long_description = """Frets on Fire is a game of musical skill and fast fingers. The aim of
@@ -92,6 +93,7 @@ test_requires = [
 ]
 
 [tool.briefcase.app.fretsonfire.macOS]
+icon = "src/fretsonfire/data/icon_mac_composed"
 universal_build = true
 requires = ["std-nslog~=1.0.3"]
 

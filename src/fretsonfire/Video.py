@@ -20,9 +20,11 @@
 #####################################################################
 
 import pygame
+from pathlib import Path
 from OpenGL.GL import glEnable
 from OpenGL.GL.ARB.multisample import GL_MULTISAMPLE_ARB
 from . import Log
+from . import Version
 
 class Video:
   def __init__(self, caption = "Game"):
@@ -45,7 +47,13 @@ class Video:
       pass
       
     pygame.display.init()
-    
+
+    try:
+      icon_path = Path(Version.dataPath()) / "icon.png"
+      pygame.display.set_icon(pygame.image.load(str(icon_path)))
+    except Exception as error:
+      Log.warn(f"Unable to apply window icon: {error}")
+
     pygame.display.gl_set_attribute(pygame.GL_RED_SIZE,   8)
     pygame.display.gl_set_attribute(pygame.GL_GREEN_SIZE, 8)
     pygame.display.gl_set_attribute(pygame.GL_BLUE_SIZE,  8)
@@ -83,7 +91,7 @@ class Video:
     self.multisamples = multisamples
 
     return bool(self.screen)
-    
+  
   def toggleFullscreen(self):
     assert self.screen
 
