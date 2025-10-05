@@ -19,7 +19,6 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from OpenGL.GL import glColor4f
 from . import Config
 
 # read the color scheme from the config file
@@ -48,6 +47,16 @@ baseColor       = None
 selectedColor   = None
 fretColors      = None
 
+_gl_color4f = None
+
+
+def _get_gl_color4f():
+  global _gl_color4f
+  if _gl_color4f is None:
+    from OpenGL.GL import glColor4f as _gl_color4f_import
+    _gl_color4f = _gl_color4f_import
+  return _gl_color4f
+
 def open(config):
   global backgroundColor, baseColor, selectedColor, fretColors
   backgroundColor = hexToColor(config.get("theme", "background_color"))
@@ -56,7 +65,7 @@ def open(config):
   fretColors      = [hexToColor(config.get("theme", "fret%d_color" % i)) for i in range(5)]
 
 def setSelectedColor(alpha = 1.0):
-  glColor4f(*(selectedColor + (alpha,)))
+  _get_gl_color4f()(*(selectedColor + (alpha,)))
 
 def setBaseColor(alpha = 1.0):
-  glColor4f(*(baseColor + (alpha,)))
+  _get_gl_color4f()(*(baseColor + (alpha,)))
