@@ -141,7 +141,7 @@ jobs:
       contents: write
     strategy:
       matrix:
-        target: [Windows, macOS, Debian, Fedora]
+        target: [Windows, macOS, Debian, Fedora, Flatpak]
         include:
           - target: Windows
             output-format: "app"
@@ -163,6 +163,15 @@ jobs:
             pre-command: "sudo apt -y install socat"
             briefcase-run-prefix: "xvfb-run"
             briefcase-args: "--target fedora"
+          - target: Flatpak
+            platform: "Linux"
+            output-format: "flatpak"
+            runs-on: "ubuntu-latest"
+            pre-command: |
+              sudo apt -y update
+              sudo apt -y install flatpak flatpak-builder
+            briefcase-run-prefix: "xvfb-run"
+            briefcase-args: ""
     runs-on: ${{ matrix.runs-on }}
 
     steps:
@@ -200,7 +209,7 @@ jobs:
           briefcase package \
             ${{ matrix.platform || matrix.target }} \
             ${{ matrix.output-format }} \
-            --update --adhoc-sign --no-input --log \
+            --adhoc-sign --no-input --log \
             ${{ matrix.briefcase-args }}
 
       - name: Upload | Distribution Artifacts (${{ matrix.target }})
