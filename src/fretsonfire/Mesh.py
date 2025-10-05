@@ -42,16 +42,8 @@ class Mesh:
     glLightfv(GL_LIGHT0 + n, GL_AMBIENT, (0.0, 0.0, 0.0, 0.0))
 
   def setupMaterial(self, material):
-    for m in material.techniqueCommon.iMaterials:
-      if m.object:
-        for fx in m.object.iEffects:
-          if fx.object:
-            shader = fx.object.profileCommon.technique.shader
-            if isinstance(shader, Collada.DaeFxShadePhong):
-              glMaterialf (GL_FRONT_AND_BACK, GL_SHININESS, shader.shininess.float)
-              glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT,   shader.ambient.color.rgba)
-              glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,   shader.diffuse.color.rgba)
-              glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR,  shader.specular.color.rgba)
+    # Material data is not parsed by the lightweight COLLADA loader yet.
+    return
 
   def render(self, geomName = None):
     if geomName in self.fullGeoms:

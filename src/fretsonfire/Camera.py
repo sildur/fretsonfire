@@ -19,7 +19,7 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-from OpenGL.GLU import *
+from OpenGL.GLU import gluLookAt
 
 class Camera:
   def __init__(self):
@@ -35,4 +35,3 @@ class Camera:
     gluLookAt(self.origin[0], self.origin[1], self.origin[2],
               self.target[0], self.target[1], self.target[2],
               self.up[0],     self.up[1],     self.up[2])
-

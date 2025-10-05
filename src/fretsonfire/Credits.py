@@ -19,10 +19,10 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import pygame
-from OpenGL.GL import *
-from OpenGL.GLU import *
 import math
+
+import pygame
+from OpenGL.GL import glColor4f, glTranslatef
 
 from .View import Layer
 from .Input import KeyListener
