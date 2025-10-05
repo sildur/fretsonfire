@@ -2,6 +2,24 @@
 
 <!-- version list -->
 
+## v1.5.8 (2025-10-05)
+
+### Bug Fixes
+
+- Apply fretsonfire icons for window and bundles
+  ([`6806cb1`](https://github.com/sildur/fretsonfire/commit/6806cb14da11c953e2077713708f97b13b9c0a9d))
+
+### Build System
+
+- Drop legacy helper scripts
+  ([`11e5c55`](https://github.com/sildur/fretsonfire/commit/11e5c55f4a022f35c68fbb9016dfebb2083241dc))
+
+### Refactoring
+
+- Replace Collada parser with lightweight loader
+  ([`0d3f943`](https://github.com/sildur/fretsonfire/commit/0d3f9438434cacc6baee704dc476d50dba7d24bc))
+
+
 ## v1.5.7 (2025-10-05)
 
 ### Build System
