@@ -20,6 +20,11 @@ from fretsonfire.MainMenu import MainMenu
 
 import pygame
 
+try:
+    from OpenGL import GL
+except Exception:  # pragma: no cover - import varies by environment
+    GL = None
+
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(
@@ -57,6 +62,38 @@ def wait_for_frame(engine: GameEngine, delay: float) -> None:
             break
 
 
+def _save_current_frame(output: Path) -> None:
+    surface = pygame.display.get_surface()
+    if surface is None:
+        raise RuntimeError("No display surface available for screenshot capture")
+
+    width, height = surface.get_size()
+    flags = surface.get_flags()
+
+    if flags & pygame.OPENGL:
+        if GL is None:
+            raise RuntimeError("OpenGL capture requested but PyOpenGL is unavailable")
+
+        # Ensure tightly packed pixel rows before reading from the framebuffer.
+        GL.glPixelStorei(GL.GL_PACK_ALIGNMENT, 1)
+
+        pixel_data = GL.glReadPixels(0, 0, width, height, GL.GL_RGBA, GL.GL_UNSIGNED_BYTE)
+        if pixel_data is None:
+            raise RuntimeError("Failed to read OpenGL framebuffer for screenshot")
+
+        if not isinstance(pixel_data, (bytes, bytearray, memoryview)):
+            pixel_data = bytes(pixel_data)
+
+        image = pygame.image.frombuffer(pixel_data, (width, height), "RGBA")
+        # OpenGL's origin is the bottom-left; flip vertically to match usual screenshots.
+        image = pygame.transform.flip(image, False, True).copy()
+    else:
+        image = surface.copy()
+
+    output.parent.mkdir(parents=True, exist_ok=True)
+    pygame.image.save(image, output.as_posix())
+
+
 def capture(delay: float, output: Path) -> Path:
     Log.set_quiet(True)
 
@@ -66,14 +103,8 @@ def capture(delay: float, output: Path) -> Path:
 
     try:
         wait_for_frame(engine, delay)
-
-        surface = pygame.display.get_surface()
-        if surface is None:
-            raise RuntimeError("No display surface available for screenshot capture")
-
         output = output.resolve()
-        output.parent.mkdir(parents=True, exist_ok=True)
-        pygame.image.save(surface, output.as_posix())
+        _save_current_frame(output)
         return output
     finally:
         engine.quit()
