@@ -74,98 +74,105 @@ jobs:
               return;
             }
 
+            const marker = '<!-- gameplay-screenshot -->';
+            const attachmentName = 'gameplay-preview.jpg';
+
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
 
-            const prData = await github.graphql(
-              `query ($owner: String!, $repo: String!, $number: Int!) {
-                repository(owner: $owner, name: $repo) {
-                  pullRequest(number: $number) {
-                    id
-                  }
-                }
-              }`,
-              { owner, repo, number: issue_number }
-            );
-
-            const pullRequestId = prData?.repository?.pullRequest?.id;
-            if (!pullRequestId) {
-              core.warning('Unable to resolve pull request node id; skipping screenshot comment.');
-              return;
-            }
-
-            let attachmentUrl;
-            try {
-              const fileContent = fs.readFileSync(previewPath).toString('base64');
-              const uploadResult = await github.graphql(
-                `mutation ($input: UploadCommentAttachmentInput!) {
-                  uploadCommentAttachment(input: $input) {
-                    attachment {
-                      url
-                    }
-                  }
-                }`,
-                {
-                  input: {
-                    subjectId: pullRequestId,
-                    name: 'gameplay-preview.jpg',
-                    contentType: 'image/jpeg',
-                    attachment: fileContent,
-                  },
-                }
-              );
-
-              attachmentUrl = uploadResult?.uploadCommentAttachment?.attachment?.url;
-            } catch (error) {
-              core.warning(`Failed to upload gameplay preview attachment: ${error}`);
-              return;
-            }
-
-            if (!attachmentUrl) {
-              core.warning('Attachment upload did not return a URL; skipping screenshot comment.');
-              return;
-            }
-
-            const marker = '<!-- gameplay-screenshot -->';
-            const body = [
-              marker,
-              '🕹️ **Gameplay Preview**',
-              'Screenshot generated automatically by CI:',
-              '',
-              `<img src="${attachmentUrl}" alt="Gameplay screenshot" width="320" />`,
-              '',
-              'Full-resolution PNG is available as a workflow artifact.',
-            ].join('\n');
-
-            if (body.length >= 65000) {
-              core.warning(`Preview comment body is ${body.length} characters; skipping to stay under GitHub limits.`);
-              return;
-            }
-
-            const existing = await github.paginate(github.rest.issues.listComments, {
+            const comments = await github.paginate(github.rest.issues.listComments, {
               owner,
               repo,
               issue_number,
               per_page: 100,
             });
 
-            const previous = existing.find(comment => comment.user?.type === 'Bot' && comment.body?.includes(marker));
+            let comment = comments.find((entry) => entry.user?.type === 'Bot' && entry.body?.includes(marker));
+            let createdNewComment = false;
 
-            if (previous) {
-              await github.rest.issues.updateComment({
-                owner,
-                repo,
-                comment_id: previous.id,
-                body,
-              });
-            } else {
-              await github.rest.issues.createComment({
+            if (!comment) {
+              const created = await github.rest.issues.createComment({
                 owner,
                 repo,
                 issue_number,
-                body,
+                body: `${marker}\nUploading gameplay preview...`,
               });
+              comment = created.data;
+              createdNewComment = true;
             }
+
+            if (!comment?.id) {
+              core.warning('Unable to determine comment id for gameplay preview attachment.');
+              return;
+            }
+
+            const fileContent = fs.readFileSync(previewPath, { encoding: 'base64' });
+
+            let attachmentUrl;
+            try {
+              const upload = await github.request('POST /repos/{owner}/{repo}/issues/comments/{comment_id}/attachments', {
+                owner,
+                repo,
+                comment_id: comment.id,
+                name: attachmentName,
+                data: fileContent,
+                headers: {
+                  'X-GitHub-Api-Version': '2022-11-28',
+                },
+              });
+              attachmentUrl = upload?.data?.url;
+            } catch (error) {
+              if (createdNewComment) {
+                await github.rest.issues.deleteComment({
+                  owner,
+                  repo,
+                  comment_id: comment.id,
+                });
+              }
+              core.warning(`Failed to upload gameplay preview attachment: ${error}`);
+              return;
+            }
+
+            if (!attachmentUrl) {
+              if (createdNewComment) {
+                await github.rest.issues.deleteComment({
+                  owner,
+                  repo,
+                  comment_id: comment.id,
+                });
+              }
+              core.warning('Attachment upload did not return a URL; skipping screenshot comment.');
+              return;
+            }
+
+            const body = [
+              marker,
+              '🕹️ **Gameplay Preview**',
+              'Screenshot generated automatically by CI:',
+              '',
+              `![Gameplay screenshot](${attachmentUrl})`,
+              '',
+              'Full-resolution PNG is available as a workflow artifact.',
+            ].join('\n');
+
+            if (body.length >= 65000) {
+              if (createdNewComment) {
+                await github.rest.issues.deleteComment({
+                  owner,
+                  repo,
+                  comment_id: comment.id,
+                });
+              }
+              core.warning(`Preview comment body is ${body.length} characters; skipping to stay under GitHub limits.`);
+              return;
+            }
+
+            await github.rest.issues.updateComment({
+              owner,
+              repo,
+              comment_id: comment.id,
+              body,
+            });
 
   release:
     needs: tests
