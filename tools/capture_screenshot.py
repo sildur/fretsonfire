@@ -45,6 +45,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=Path("artifacts/gameplay.png"),
         help="Path where the full-resolution screenshot will be written",
     )
+    parser.add_argument(
+        "--preview-output",
+        type=Path,
+        help="Optional path for a scaled-down JPEG preview",
+    )
+    parser.add_argument(
+        "--preview-width",
+        type=int,
+        default=640,
+        help="Width in pixels for the preview image when --preview-output is set",
+    )
     return parser.parse_args(argv)
 
 
@@ -62,7 +73,7 @@ def wait_for_frame(engine: GameEngine, delay: float) -> None:
             break
 
 
-def _save_current_frame(output: Path) -> None:
+def _capture_current_frame() -> pygame.Surface:
     surface = pygame.display.get_surface()
     if surface is None:
         raise RuntimeError("No display surface available for screenshot capture")
@@ -90,8 +101,23 @@ def _save_current_frame(output: Path) -> None:
     else:
         image = surface.copy()
 
-    output.parent.mkdir(parents=True, exist_ok=True)
-    pygame.image.save(image, output.as_posix())
+    return image
+
+
+def _save_image(image: pygame.Surface, path: Path) -> Path:
+    path = path.resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    suffix = path.suffix.lower()
+    if suffix in {".jpg", ".jpeg"}:
+        # JPEG does not support an alpha channel; convert to 24-bit RGB if needed.
+        masks = image.get_masks()
+        has_alpha = len(masks) == 4 and masks[3] != 0
+        if has_alpha:
+            image = image.convert(24)
+
+    pygame.image.save(image, path.as_posix())
+    return path
 
 
 
@@ -99,6 +125,8 @@ def capture(
     *,
     delay: float,
     output: Path,
+    preview_output: Path | None,
+    preview_width: int,
 ) -> Path:
     Log.set_quiet(True)
 
@@ -108,9 +136,21 @@ def capture(
 
     try:
         wait_for_frame(engine, delay)
-        output = output.resolve()
-        _save_current_frame(output)
-        return output
+        frame = _capture_current_frame()
+        output_path = _save_image(frame, output)
+
+        if preview_output is not None:
+            preview_width = max(1, preview_width)
+            if preview_width < frame.get_width():
+                scale = preview_width / frame.get_width()
+                preview_height = max(1, int(frame.get_height() * scale))
+                preview = pygame.transform.smoothscale(frame, (preview_width, preview_height))
+            else:
+                preview = frame.copy()
+
+            _save_image(preview, preview_output)
+
+        return output_path
     finally:
         engine.quit()
         pygame.quit()
@@ -123,12 +163,16 @@ def main(argv: list[str] | None = None) -> int:
         output_path = capture(
             delay=args.delay,
             output=args.output,
+            preview_output=args.preview_output,
+            preview_width=args.preview_width,
         )
     except Exception as exc:  # pragma: no cover - exercised in CI
         print(f"Failed to capture screenshot: {exc}", file=sys.stderr)
         return 1
 
     print(f"Screenshot saved to {output_path}")
+    if args.preview_output is not None:
+        print(f"Preview saved to {Path(args.preview_output).resolve()}")
     return 0
 
 
