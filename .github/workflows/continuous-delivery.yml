@@ -47,8 +47,7 @@ jobs:
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
             python tools/capture_screenshot.py \
               --delay 5 \
-              --output artifacts/gameplay.png \
-              --preview-output artifacts/gameplay-preview.jpg
+              --output artifacts/gameplay.png
 
       - name: Upload | Gameplay screenshot
         id: upload_screenshot
@@ -58,12 +57,15 @@ jobs:
           path: artifacts/gameplay.png
           if-no-files-found: error
 
-      - name: Comment | Post screenshot on PR
+      - name: Comment | Gameplay Screenshot
         if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v3
         with:
-          file-path: artifacts/gameplay-preview.jpg
-          comment-tag: gameplay-preview
+          comment-tag: gameplay-screenshot
+          message: |
+            🕹️ **Gameplay Preview**
+            Screenshot generated automatically by CI:
+            ![Gameplay Screenshot](https://github.com/${{ github.repository }}/blob/${{ github.sha }}/artifacts/gameplay.png?raw=true)
 
   release:
     needs: tests
