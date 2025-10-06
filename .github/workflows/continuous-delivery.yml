@@ -74,14 +74,65 @@ jobs:
               return;
             }
 
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+
+            const prData = await github.graphql(
+              `query ($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    id
+                  }
+                }
+              }`,
+              { owner, repo, number: issue_number }
+            );
+
+            const pullRequestId = prData?.repository?.pullRequest?.id;
+            if (!pullRequestId) {
+              core.warning('Unable to resolve pull request node id; skipping screenshot comment.');
+              return;
+            }
+
+            let attachmentUrl;
+            try {
+              const fileContent = fs.readFileSync(previewPath).toString('base64');
+              const uploadResult = await github.graphql(
+                `mutation ($input: UploadCommentAttachmentInput!) {
+                  uploadCommentAttachment(input: $input) {
+                    attachment {
+                      url
+                    }
+                  }
+                }`,
+                {
+                  input: {
+                    subjectId: pullRequestId,
+                    name: 'gameplay-preview.jpg',
+                    contentType: 'image/jpeg',
+                    attachment: fileContent,
+                  },
+                }
+              );
+
+              attachmentUrl = uploadResult?.uploadCommentAttachment?.attachment?.url;
+            } catch (error) {
+              core.warning(`Failed to upload gameplay preview attachment: ${error}`);
+              return;
+            }
+
+            if (!attachmentUrl) {
+              core.warning('Attachment upload did not return a URL; skipping screenshot comment.');
+              return;
+            }
+
             const marker = '<!-- gameplay-screenshot -->';
-            const base64 = fs.readFileSync(previewPath, { encoding: 'base64' });
             const body = [
               marker,
               '🕹️ **Gameplay Preview**',
               'Screenshot generated automatically by CI:',
               '',
-              `<img src="data:image/jpeg;base64,${base64}" alt="Gameplay screenshot" width="320" />`,
+              `<img src="${attachmentUrl}" alt="Gameplay screenshot" width="320" />`,
               '',
               'Full-resolution PNG is available as a workflow artifact.',
             ].join('\n');
@@ -90,9 +141,6 @@ jobs:
               core.warning(`Preview comment body is ${body.length} characters; skipping to stay under GitHub limits.`);
               return;
             }
-
-            const { owner, repo } = context.repo;
-            const issue_number = context.issue.number;
 
             const existing = await github.paginate(github.rest.issues.listComments, {
               owner,
