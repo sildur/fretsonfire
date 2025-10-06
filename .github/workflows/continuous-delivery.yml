@@ -61,7 +61,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v3
         with:
-          file: artifacts/gameplay.png
+          filePath: artifacts/gameplay.png
           comment-tag: gameplay-preview
 
   release:
