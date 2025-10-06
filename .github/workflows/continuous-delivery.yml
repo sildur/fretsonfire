@@ -47,10 +47,7 @@ jobs:
           xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
             python tools/capture_screenshot.py \
               --delay 5 \
-              --output artifacts/gameplay.png \
-              --comment-output artifacts/gameplay-comment.jpg \
-              --comment-markdown artifacts/comment-body.md \
-              --comment-max-width 512
+              --output artifacts/gameplay.png
 
       - name: Upload | Gameplay screenshot
         id: upload_screenshot
@@ -64,7 +61,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v3
         with:
-          file-path: artifacts/comment-body.md
+          file: artifacts/gameplay.png
           comment-tag: gameplay-preview
 
   release:
