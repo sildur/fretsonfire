@@ -56,6 +56,16 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=640,
         help="Width in pixels for the preview image when --preview-output is set",
     )
+    parser.add_argument(
+        "--preview-max-bytes",
+        type=int,
+        default=1_000_000,
+        help=(
+            "Maximum allowed size for the preview (in bytes). If the encoded file "
+            "is larger, the helper resizes the preview until it fits or the "
+            "dimensions reach a practical minimum."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -120,6 +130,54 @@ def _save_image(image: pygame.Surface, path: Path) -> Path:
     return path
 
 
+def _scale_surface(surface: pygame.Surface, width: int) -> pygame.Surface:
+    width = max(1, width)
+    original_width, original_height = surface.get_size()
+    if width >= original_width:
+        return surface.copy()
+
+    height = max(1, int(original_height * (width / original_width)))
+    return pygame.transform.smoothscale(surface, (width, height))
+
+
+def _write_preview(
+    frame: pygame.Surface,
+    *,
+    output: Path,
+    width: int,
+    max_bytes: int,
+) -> None:
+    preview = _scale_surface(frame, width)
+    saved = _save_image(preview, output)
+
+    if max_bytes <= 0:
+        return
+
+    try:
+        current_size = saved.stat().st_size
+    except OSError as error:  # pragma: no cover - filesystem errors are unlikely
+        raise RuntimeError(f"Unable to stat preview file {saved}: {error}") from error
+
+    if current_size <= max_bytes:
+        return
+
+    min_edge = 64
+    shrink_factor = 0.75
+    width = preview.get_width()
+
+    while current_size > max_bytes and width > min_edge:
+        width = max(min_edge, int(width * shrink_factor))
+        preview = _scale_surface(frame, width)
+        saved = _save_image(preview, output)
+        current_size = saved.stat().st_size
+
+    if current_size > max_bytes:
+        raise RuntimeError(
+            "Preview screenshot exceeds size budget even after downscaling: "
+            f"{current_size} bytes > {max_bytes} bytes"
+        )
+
+
 
 def capture(
     *,
@@ -127,6 +185,7 @@ def capture(
     output: Path,
     preview_output: Path | None,
     preview_width: int,
+    preview_max_bytes: int,
 ) -> Path:
     Log.set_quiet(True)
 
@@ -140,15 +199,12 @@ def capture(
         output_path = _save_image(frame, output)
 
         if preview_output is not None:
-            preview_width = max(1, preview_width)
-            if preview_width < frame.get_width():
-                scale = preview_width / frame.get_width()
-                preview_height = max(1, int(frame.get_height() * scale))
-                preview = pygame.transform.smoothscale(frame, (preview_width, preview_height))
-            else:
-                preview = frame.copy()
-
-            _save_image(preview, preview_output)
+            _write_preview(
+                frame,
+                output=preview_output,
+                width=preview_width,
+                max_bytes=max(0, preview_max_bytes),
+            )
 
         return output_path
     finally:
@@ -165,6 +221,7 @@ def main(argv: list[str] | None = None) -> int:
             output=args.output,
             preview_output=args.preview_output,
             preview_width=args.preview_width,
+            preview_max_bytes=args.preview_max_bytes,
         )
     except Exception as exc:  # pragma: no cover - exercised in CI
         print(f"Failed to capture screenshot: {exc}", file=sys.stderr)

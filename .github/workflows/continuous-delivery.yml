@@ -49,7 +49,8 @@ jobs:
               --delay 5 \
               --output artifacts/gameplay.png \
               --preview-output artifacts/gameplay-preview.jpg \
-              --preview-width 320
+              --preview-width 320 \
+              --preview-max-bytes 900000
 
       - name: Upload | Gameplay screenshot
         id: upload_screenshot
@@ -78,6 +79,37 @@ jobs:
 
             const marker = '<!-- gameplay-screenshot -->';
             const attachmentName = 'gameplay-preview.jpg';
+
+            const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+            if (!token) {
+              core.warning('GitHub token not available; skipping screenshot attachment.');
+              return;
+            }
+
+            let fileStats;
+            try {
+              fileStats = fs.statSync(previewPath);
+            } catch (error) {
+              core.warning(`Unable to stat preview at ${previewPath}: ${error}`);
+              return;
+            }
+
+            const previewSize = fileStats.size;
+            core.info(`Gameplay preview size: ${previewSize} bytes`);
+
+            if (previewSize <= 0) {
+              core.warning('Preview screenshot is empty; skipping attachment upload.');
+              return;
+            }
+
+            const maxAttachmentBytes = 10 * 1024 * 1024;
+            if (previewSize >= maxAttachmentBytes) {
+              core.warning(
+                `Preview screenshot is ${previewSize} bytes which exceeds the ${maxAttachmentBytes} byte ` +
+                'attachment limit; skipping upload.'
+              );
+              return;
+            }
 
             const { owner, repo } = context.repo;
             const issue_number = context.issue.number;
@@ -108,12 +140,6 @@ jobs:
               return;
             }
 
-            const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
-            if (!token) {
-              core.warning('GitHub token not available; skipping screenshot attachment.');
-              return;
-            }
-
             const fileContent = fs.readFileSync(previewPath);
 
             const apiUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
@@ -139,10 +165,8 @@ jobs:
 
               const form = new FormData();
               form.append('name', attachmentName);
-              const file = new File([fileContent], attachmentName, {
-                type: 'image/jpeg',
-              });
-              form.append('file', file);
+              const blob = new Blob([fileContent], { type: 'image/jpeg' });
+              form.append('file', blob, attachmentName);
 
               const response = await fetch(uploadEndpoint, {
                 method: 'POST',
