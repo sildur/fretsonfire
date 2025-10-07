@@ -32,6 +32,11 @@ from . import Config
 from .Texture import Texture
 from PIL import Image
 
+try:  # Pillow >= 9
+  _RESAMPLE_LANCZOS = Image.Resampling.LANCZOS
+except AttributeError:  # pragma: no cover - Pillow < 9
+  _RESAMPLE_LANCZOS = getattr(Image, "LANCZOS", Image.ANTIALIAS)
+
 try:
   from cairosvg import svg2png
   haveCairoSvg = True
@@ -617,16 +622,22 @@ class SvgDrawing:
       return False
 
     try:
-      render_kwargs = {}
-      if width:
-        render_kwargs["output_width"] = width
-      if height:
-        render_kwargs["output_height"] = height
       if self._svg_source and os.path.isfile(self._svg_source):
-        png_bytes = svg2png(url = self._svg_source, **render_kwargs)
+        png_bytes = svg2png(url = self._svg_source)
       else:
-        png_bytes = svg2png(bytestring = self._svg_bytes, **render_kwargs)
+        png_bytes = svg2png(bytestring = self._svg_bytes)
       image = Image.open(BytesIO(png_bytes)).convert("RGBA")
+
+      alpha = image.split()[-1]
+      bbox = alpha.getbbox()
+      if bbox:
+        left, top, right, bottom = bbox
+        if right - left > 0 and bottom - top > 0:
+          image = image.crop(bbox)
+
+      if width or height:
+        image = self._resize_image(image, width, height)
+
       if not self.texture:
         self.texture = Texture()
       self.texture.loadImage(image)
@@ -636,6 +647,36 @@ class SvgDrawing:
     except Exception as exc:
       Log.warn("Unable to render SVG '%s' using Cairo: %s", self._svg_source or "<memory>", exc)
       return False
+
+  def _resize_image(self, image, width, height):
+    target_width = width or 0
+    target_height = height or 0
+
+    if target_width and target_height:
+      scale = min(target_width / image.width, target_height / image.height)
+      scaled_size = (
+        max(1, int(round(image.width * scale))),
+        max(1, int(round(image.height * scale))),
+      )
+      if scaled_size != image.size:
+        image = image.resize(scaled_size, _RESAMPLE_LANCZOS)
+      if scaled_size == (target_width, target_height):
+        return image
+      canvas = Image.new("RGBA", (target_width, target_height), (0, 0, 0, 0))
+      offset_x = (target_width - image.width) // 2
+      offset_y = (target_height - image.height) // 2
+      canvas.paste(image, (offset_x, offset_y))
+      return canvas
+
+    if target_width:
+      target_height = max(1, int(round(image.height * (target_width / image.width))))
+      return image.resize((target_width, target_height), _RESAMPLE_LANCZOS)
+
+    if target_height:
+      target_width = max(1, int(round(image.width * (target_height / image.height))))
+      return image.resize((target_width, target_height), _RESAMPLE_LANCZOS)
+
+    return image
 
   def _cacheDrawing(self, drawBoard):
     self.cache.beginCaching()
