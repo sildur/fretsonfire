@@ -62,6 +62,8 @@ jobs:
       - name: Comment | Gameplay Screenshot
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -106,6 +108,12 @@ jobs:
               return;
             }
 
+            const token = process.env.GH_TOKEN || process.env.GITHUB_TOKEN;
+            if (!token) {
+              core.warning('GitHub token not available; skipping screenshot attachment.');
+              return;
+            }
+
             const fileContent = fs.readFileSync(previewPath);
 
             const apiUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
@@ -126,19 +134,33 @@ jobs:
 
             let attachmentUrl;
             try {
-              const upload = await github.request('POST /repos/{owner}/{repo}/issues/comments/{comment_id}/attachments', {
-                owner,
-                repo,
-                comment_id: comment.id,
-                name: attachmentName,
-                data: fileContent,
-                baseUrl: uploadsBaseUrl,
+              const normalizedBase = uploadsBaseUrl.replace(/\/$/, '');
+              const uploadEndpoint = `${normalizedBase}/repos/${owner}/${repo}/issues/comments/${comment.id}/attachments`;
+
+              const form = new FormData();
+              form.set('name', attachmentName);
+              form.set(
+                'file',
+                new Blob([fileContent], { type: 'image/jpeg' }),
+                attachmentName,
+              );
+
+              const response = await fetch(uploadEndpoint, {
+                method: 'POST',
                 headers: {
+                  Authorization: `token ${token}`,
+                  Accept: 'application/vnd.github+json',
                   'X-GitHub-Api-Version': '2022-11-28',
-                  'Content-Type': 'application/octet-stream',
                 },
+                body: form,
               });
-              attachmentUrl = upload?.data?.url;
+
+              if (!response.ok) {
+                throw new Error(`${response.status} ${response.statusText}`);
+              }
+
+              const upload = await response.json();
+              attachmentUrl = upload?.url;
             } catch (error) {
               if (createdNewComment) {
                 await github.rest.issues.deleteComment({
