@@ -15,6 +15,8 @@ permissions:
 
 jobs:
   tests:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
 
     steps:
@@ -33,6 +35,25 @@ jobs:
 
       - name: Test | Run pytest
         run: python -m pytest
+
+      - name: Setup | Install X virtual framebuffer
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+
+      - name: Capture | Gameplay screenshot
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" \
+            python tools/capture_screenshot.py \
+              --delay 5 \
+              --output artifacts/gameplay.png
+
+      - name: Upload | Gameplay screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: gameplay-screenshot
+          path: artifacts/gameplay.png
+          if-no-files-found: error
 
   release:
     needs: tests

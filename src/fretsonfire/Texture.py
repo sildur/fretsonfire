@@ -80,7 +80,10 @@ from OpenGL.GL.EXT.framebuffer_object import (
   glGenRenderbuffersEXT,
   glRenderbufferStorageEXT,
 )
-from OpenGL.GLU import gluBuild2DMipmaps
+try:
+  from OpenGL.GLU import gluBuild2DMipmaps
+except ImportError:  # pragma: no cover - optional dependency on some platforms
+  gluBuild2DMipmaps = None  # type: ignore[assignment]
 from queue import Queue, Empty
 
 Config.define("opengl", "supportfbo", bool, False)
@@ -335,7 +338,21 @@ class Texture:
     (w, h) = size
     Texture.bind(self)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-    gluBuild2DMipmaps(self.glTarget, components, w, h, format, GL_UNSIGNED_BYTE, string)
+    if bool(gluBuild2DMipmaps):
+      gluBuild2DMipmaps(self.glTarget, components, w, h, format, GL_UNSIGNED_BYTE, string)
+    else:
+      glTexImage2D(
+        self.glTarget,
+        0,
+        components,
+        w,
+        h,
+        0,
+        format,
+        GL_UNSIGNED_BYTE,
+        string,
+      )
+      glTexParameteri(self.glTarget, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 
   def loadSubRaw(self, size, position, string, format):
     Texture.bind(self)
