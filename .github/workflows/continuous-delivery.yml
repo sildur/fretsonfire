@@ -166,8 +166,11 @@ jobs:
               const form = new FormData();
               form.append('name', attachmentName);
               form.append('size', String(previewSize));
-              const blob = new Blob([fileContent], { type: 'image/jpeg' });
-              form.append('file', blob, attachmentName);
+              form.append('content_type', 'image/jpeg');
+              form.append('file', fileContent, {
+                filename: attachmentName,
+                contentType: 'application/octet-stream',
+              });
 
               const response = await fetch(uploadEndpoint, {
                 method: 'POST',
