@@ -33,6 +33,7 @@ dependencies = [
     "PyOpenGL>=3.1",
     "numpy>=1.20",
     "Pillow>=9.0",
+    "cairosvg>=2.7",
     "pyasyncore>=1.0",
 ]
 
@@ -86,6 +87,7 @@ requires = [
     "PyOpenGL>=3.1",
     "numpy>=1.20",
     "Pillow>=9.0",
+    "cairosvg>=2.7",
     "pyasyncore>=1.0",
 ]
 test_requires = [

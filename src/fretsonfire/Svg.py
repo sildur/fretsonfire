@@ -21,6 +21,7 @@
 
 import re
 import os
+from io import BytesIO
 from xml import sax
 from OpenGL.GL import *
 from numpy import reshape, dot, transpose, identity, zeros, float32
@@ -28,7 +29,14 @@ from math import sin, cos
 
 from . import Log
 from . import Config
-from .Texture import Texture, TextureException
+from .Texture import Texture
+from PIL import Image
+
+try:
+  from cairosvg import svg2png
+  haveCairoSvg = True
+except Exception:  # pragma: no cover - defensive fallback
+  haveCairoSvg = False
 
 # Amanith support is now deprecated
 #try:
@@ -536,35 +544,87 @@ class SvgDrawing:
     self.context = context
     self.cache = None
     self.transform = SvgTransform()
+    self._svg_bytes = None
+    self._svg_source = None
 
-    # Detect the type of data passed in
     if hasattr(svgData, 'read'):
-      self.svgData = svgData.read()
+      raw = svgData.read()
+      if isinstance(raw, bytes):
+        self._svg_bytes = raw
+        try:
+          self.svgData = raw.decode(Config.encoding)
+        except UnicodeDecodeError:
+          self.svgData = None
+      else:
+        self.svgData = raw
+        self._svg_bytes = raw.encode(Config.encoding)
+      self._svg_source = getattr(svgData, "name", None)
+      if not self._render_svg_to_texture():
+        Log.warn("Unable to render in-memory SVG data%s using Cairo; no bitmap fallback available.",
+                 f" from '{self._svg_source}'" if self._svg_source else "")
     elif isinstance(svgData, str):
-      bitmapFile = svgData.replace(".svg", ".png")
-      # Load PNG files directly
-      if svgData.endswith(".png"):
-        self.texture = Texture(svgData)
-      # Check whether we have a prerendered bitmap version of the SVG file
-      elif svgData.endswith(".svg") and os.path.exists(bitmapFile):
-        Log.debug("Loading cached bitmap '%s' instead of '%s'." % (bitmapFile, svgData))
-        self.texture = Texture(bitmapFile)
+      self._svg_source = svgData
+      extension = os.path.splitext(svgData)[1].lower()
+      if extension == ".png":
+        try:
+          self.texture = Texture(svgData)
+        except Exception as exc:
+          Log.error("Unable to load PNG texture '%s': %s", svgData, exc)
+      elif extension == ".svg":
+        try:
+          with open(svgData, 'r', encoding=Config.encoding) as handle:
+            self.svgData = handle.read()
+          self._svg_bytes = self.svgData.encode(Config.encoding)
+        except Exception as exc:
+          Log.error("Failed to read SVG file '%s': %s", svgData, exc)
+        else:
+          if not self._render_svg_to_texture():
+            fallback = os.path.splitext(svgData)[0] + ".png"
+            if os.path.exists(fallback):
+              Log.debug("Loading cached bitmap '%s' instead of '%s'.", fallback, svgData)
+              self._load_png_texture(fallback)
+            else:
+              Log.warn("Unable to render SVG '%s' and no PNG fallback was found.", svgData)
       else:
-        if not haveAmanith:
-          e = "PyAmanith support is deprecated and you are trying to load an SVG file."
-          Log.error(e)
-          raise RuntimeError(e)
-        Log.debug("Loading SVG file '%s'." % (svgData))
-        self.svgData = open(svgData, 'r', encoding=Config.encoding).read()
+        try:
+          self.texture = Texture(svgData)
+        except Exception as exc:
+          Log.error("Unable to load texture '%s': %s", svgData, exc)
+    else:
+      Log.error("Unsupported SVG data type '%s'.", type(svgData))
 
-    # Make sure we have a valid texture
     if not self.texture:
-      if isinstance(svgData, str):
-        e = "Unable to load texture for %s." % svgData
-      else:
-        e = "Unable to load texture for SVG file."
+      source = self._svg_source if isinstance(svgData, str) else 'SVG data'
+      e = "Unable to load texture for %s." % source
       Log.error(e)
       raise RuntimeError(e)
+
+  def _load_png_texture(self, file_name):
+    try:
+      self.texture = Texture(file_name)
+    except Exception as exc:
+      Log.error("Unable to load PNG fallback '%s': %s", file_name, exc)
+      self.texture = None
+
+  def _render_svg_to_texture(self, width = None, height = None):
+    if not self._svg_bytes:
+      return False
+    if not haveCairoSvg:
+      Log.warn("CairoSVG is not available; unable to render '%s'.", self._svg_source or "SVG data")
+      return False
+
+    try:
+      png_bytes = svg2png(bytestring = self._svg_bytes, output_width = width, output_height = height)
+      image = Image.open(BytesIO(png_bytes)).convert("RGBA")
+      if not self.texture:
+        self.texture = Texture()
+      self.texture.loadImage(image)
+      if self._svg_source:
+        self.texture.name = self._svg_source
+      return True
+    except Exception as exc:
+      Log.warn("Unable to render SVG '%s' using Cairo: %s", self._svg_source or "<memory>", exc)
+      return False
 
   def _cacheDrawing(self, drawBoard):
     self.cache.beginCaching()
@@ -574,12 +634,14 @@ class SvgDrawing:
     del self.svgData
 
   def convertToTexture(self, width, height):
-    if self.texture:
+    if self.texture and getattr(self.texture, "pixelSize", None) == (width, height):
       return
 
-    e = "SVG drawing does not have a valid texture image."
-    Log.error(e)
-    raise RuntimeError(e)
+    previous_texture = self.texture
+    if not self._render_svg_to_texture(width = width, height = height) and previous_texture is None:
+      e = "SVG drawing does not have a valid texture image."
+      Log.error(e)
+      raise RuntimeError(e)
 
     #try:
     #  self.texture = Texture()
