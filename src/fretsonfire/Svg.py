@@ -628,8 +628,7 @@ class SvgDrawing:
         png_bytes = svg2png(bytestring = self._svg_bytes)
       image = Image.open(BytesIO(png_bytes)).convert("RGBA")
 
-      if width or height:
-        image = self._resize_image(image, width, height)
+      image = self._scale_svg_image(image, width, height)
 
       if not self.texture:
         self.texture = Texture()
@@ -641,35 +640,72 @@ class SvgDrawing:
       Log.warn("Unable to render SVG '%s' using Cairo: %s", self._svg_source or "<memory>", exc)
       return False
 
-  def _resize_image(self, image, width, height):
-    target_width = width or 0
-    target_height = height or 0
+  def _scale_svg_image(self, image, width, height):
+    viewport_width, viewport_height = image.size
+
+    bbox = image.getbbox()
+    if bbox:
+      left, top, right, bottom = bbox
+    else:
+      left, top = 0, 0
+      right, bottom = viewport_width, viewport_height
+
+    content = image.crop((left, top, right, bottom))
+    content_width = max(1, right - left)
+    content_height = max(1, bottom - top)
+
+    target_width = int(width) if width else 0
+    target_height = int(height) if height else 0
 
     if target_width and target_height:
-      scale = min(target_width / image.width, target_height / image.height)
-      scaled_size = (
-        max(1, int(round(image.width * scale))),
-        max(1, int(round(image.height * scale))),
-      )
-      if scaled_size != image.size:
-        image = image.resize(scaled_size, _RESAMPLE_LANCZOS)
-      if scaled_size == (target_width, target_height):
-        return image
-      canvas = Image.new("RGBA", (target_width, target_height), (0, 0, 0, 0))
-      offset_x = (target_width - image.width) // 2
-      offset_y = (target_height - image.height) // 2
-      canvas.paste(image, (offset_x, offset_y))
-      return canvas
+      scale = min(target_width / float(viewport_width), target_height / float(viewport_height))
+    elif target_width:
+      scale = target_width / float(viewport_width)
+    elif target_height:
+      scale = target_height / float(viewport_height)
+    else:
+      scale = 1.0
 
-    if target_width:
-      target_height = max(1, int(round(image.height * (target_width / image.width))))
-      return image.resize((target_width, target_height), _RESAMPLE_LANCZOS)
+    if scale <= 0:
+      scale = 1.0
 
-    if target_height:
-      target_width = max(1, int(round(image.width * (target_height / image.height))))
-      return image.resize((target_width, target_height), _RESAMPLE_LANCZOS)
+    scaled_viewport_width = max(1, int(round(viewport_width * scale)))
+    scaled_viewport_height = max(1, int(round(viewport_height * scale)))
+    scaled_content_width = max(1, int(round(content_width * scale)))
+    scaled_content_height = max(1, int(round(content_height * scale)))
 
-    return image
+    if content.size != (scaled_content_width, scaled_content_height):
+      content = content.resize((scaled_content_width, scaled_content_height), _RESAMPLE_LANCZOS)
+
+    if target_width and target_height:
+      final_width = target_width
+      final_height = target_height
+    elif target_width:
+      final_width = target_width
+      final_height = scaled_viewport_height
+    elif target_height:
+      final_width = scaled_viewport_width
+      final_height = target_height
+    else:
+      final_width = scaled_viewport_width
+      final_height = scaled_viewport_height
+
+    final_width = max(1, int(round(final_width)))
+    final_height = max(1, int(round(final_height)))
+
+    canvas = Image.new("RGBA", (final_width, final_height), (0, 0, 0, 0))
+
+    pad_x = (final_width - scaled_viewport_width) // 2 if final_width > scaled_viewport_width else 0
+    pad_y = (final_height - scaled_viewport_height) // 2 if final_height > scaled_viewport_height else 0
+
+    offset_x = pad_x + int(round(left * scale))
+    offset_y = pad_y + int(round(top * scale))
+
+    offset_x = max(0, min(final_width - scaled_content_width, offset_x))
+    offset_y = max(0, min(final_height - scaled_content_height, offset_y))
+
+    canvas.paste(content, (offset_x, offset_y), content)
+    return canvas
 
   def _cacheDrawing(self, drawBoard):
     self.cache.beginCaching()
