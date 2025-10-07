@@ -551,6 +551,7 @@ class SvgDrawing:
     self.transform = SvgTransform()
     self._svg_bytes = None
     self._svg_source = None
+    self._fallback_size = None
 
     if hasattr(svgData, 'read'):
       raw = svgData.read()
@@ -610,6 +611,7 @@ class SvgDrawing:
   def _load_png_texture(self, file_name):
     try:
       self.texture = Texture(file_name)
+      self._fallback_size = getattr(self.texture, "pixelSize", None)
     except Exception as exc:
       Log.error("Unable to load PNG fallback '%s': %s", file_name, exc)
       self.texture = None
@@ -643,19 +645,13 @@ class SvgDrawing:
   def _scale_svg_image(self, image, width, height):
     viewport_width, viewport_height = image.size
 
-    bbox = image.getbbox()
-    if bbox:
-      left, top, right, bottom = bbox
-    else:
-      left, top = 0, 0
-      right, bottom = viewport_width, viewport_height
-
-    content = image.crop((left, top, right, bottom))
-    content_width = max(1, right - left)
-    content_height = max(1, bottom - top)
-
     target_width = int(width) if width else 0
     target_height = int(height) if height else 0
+
+    if not target_width and not target_height and self._fallback_size:
+      fallback_width, fallback_height = self._fallback_size
+      target_width = int(fallback_width) or 0
+      target_height = int(fallback_height) or 0
 
     if target_width and target_height:
       scale = min(target_width / float(viewport_width), target_height / float(viewport_height))
@@ -671,11 +667,11 @@ class SvgDrawing:
 
     scaled_viewport_width = max(1, int(round(viewport_width * scale)))
     scaled_viewport_height = max(1, int(round(viewport_height * scale)))
-    scaled_content_width = max(1, int(round(content_width * scale)))
-    scaled_content_height = max(1, int(round(content_height * scale)))
 
-    if content.size != (scaled_content_width, scaled_content_height):
-      content = content.resize((scaled_content_width, scaled_content_height), _RESAMPLE_LANCZOS)
+    if image.size != (scaled_viewport_width, scaled_viewport_height):
+      scaled_image = image.resize((scaled_viewport_width, scaled_viewport_height), _RESAMPLE_LANCZOS)
+    else:
+      scaled_image = image
 
     if target_width and target_height:
       final_width = target_width
@@ -698,13 +694,11 @@ class SvgDrawing:
     pad_x = (final_width - scaled_viewport_width) // 2 if final_width > scaled_viewport_width else 0
     pad_y = (final_height - scaled_viewport_height) // 2 if final_height > scaled_viewport_height else 0
 
-    offset_x = pad_x + int(round(left * scale))
-    offset_y = pad_y + int(round(top * scale))
+    canvas.paste(scaled_image, (pad_x, pad_y), scaled_image)
 
-    offset_x = max(0, min(final_width - scaled_content_width, offset_x))
-    offset_y = max(0, min(final_height - scaled_content_height, offset_y))
+    if self._fallback_size is None and not (width or height):
+      self._fallback_size = canvas.size
 
-    canvas.paste(content, (offset_x, offset_y), content)
     return canvas
 
   def _cacheDrawing(self, drawBoard):
