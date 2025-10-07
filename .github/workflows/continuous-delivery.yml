@@ -138,17 +138,16 @@ jobs:
               const uploadEndpoint = `${normalizedBase}/repos/${owner}/${repo}/issues/comments/${comment.id}/attachments`;
 
               const form = new FormData();
-              form.set('name', attachmentName);
-              form.set(
-                'file',
-                new Blob([fileContent], { type: 'image/jpeg' }),
-                attachmentName,
-              );
+              form.append('name', attachmentName);
+              const file = new File([fileContent], attachmentName, {
+                type: 'image/jpeg',
+              });
+              form.append('file', file);
 
               const response = await fetch(uploadEndpoint, {
                 method: 'POST',
                 headers: {
-                  Authorization: `token ${token}`,
+                  Authorization: `Bearer ${token}`,
                   Accept: 'application/vnd.github+json',
                   'X-GitHub-Api-Version': '2022-11-28',
                 },
@@ -156,7 +155,8 @@ jobs:
               });
 
               if (!response.ok) {
-                throw new Error(`${response.status} ${response.statusText}`);
+                const detail = await response.text();
+                throw new Error(`${response.status} ${response.statusText}${detail ? `: ${detail}` : ''}`);
               }
 
               const upload = await response.json();
