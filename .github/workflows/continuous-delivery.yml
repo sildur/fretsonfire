@@ -16,7 +16,9 @@ permissions:
 jobs:
   tests:
     permissions:
-      contents: read
+      contents: write
+      issues: write
+      pull-requests: write
     runs-on: ubuntu-latest
 
     steps:
@@ -54,6 +56,38 @@ jobs:
           name: gameplay-screenshot
           path: artifacts/gameplay.png
           if-no-files-found: error
+
+      - name: Release | Publish PR gameplay screenshot
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        id: publish_pr_screenshot_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: pr-${{ github.event.pull_request.number }}-${{ github.run_id }}
+          name: "PR #${{ github.event.pull_request.number }} Screenshot"
+          files: artifacts/gameplay.png
+          make_latest: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Notify | Find existing screenshot comment
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.publish_pr_screenshot_release.outcome == 'success'
+        id: find_pr_screenshot_comment
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '## 📸 Screenshot Preview'
+
+      - name: Notify | Comment PR with screenshot
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.publish_pr_screenshot_release.outcome == 'success'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: ${{ steps.find_pr_screenshot_comment.outputs.comment-id }}
+          edit-mode: replace
+          body: |
+            ## 📸 Screenshot Preview
+            ![Gameplay Screenshot](https://github.com/${{ github.repository }}/releases/download/pr-${{ github.event.pull_request.number }}-${{ github.run_id }}/gameplay.png)
 
   release:
     needs: tests
