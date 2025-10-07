@@ -165,6 +165,7 @@ jobs:
 
               const form = new FormData();
               form.append('name', attachmentName);
+              form.append('size', String(previewSize));
               const blob = new Blob([fileContent], { type: 'image/jpeg' });
               form.append('file', blob, attachmentName);
 
