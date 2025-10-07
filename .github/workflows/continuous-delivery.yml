@@ -58,7 +58,7 @@ jobs:
           if-no-files-found: error
 
       - name: Release | Publish PR gameplay screenshot
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false
         id: publish_pr_screenshot_release
         uses: softprops/action-gh-release@v2
         with:
@@ -70,7 +70,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Notify | Comment PR with screenshot
-        if: github.event_name == 'pull_request' && steps.publish_pr_screenshot_release.outcome == 'success'
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork == false && steps.publish_pr_screenshot_release.outcome == 'success'
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
