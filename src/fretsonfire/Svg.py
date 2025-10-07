@@ -628,13 +628,6 @@ class SvgDrawing:
         png_bytes = svg2png(bytestring = self._svg_bytes)
       image = Image.open(BytesIO(png_bytes)).convert("RGBA")
 
-      alpha = image.split()[-1]
-      bbox = alpha.getbbox()
-      if bbox:
-        left, top, right, bottom = bbox
-        if right - left > 0 and bottom - top > 0:
-          image = image.crop(bbox)
-
       if width or height:
         image = self._resize_image(image, width, height)
 
