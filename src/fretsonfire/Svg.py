@@ -554,7 +554,7 @@ class SvgDrawing:
         try:
           self.svgData = raw.decode(Config.encoding)
         except UnicodeDecodeError:
-          self.svgData = None
+          self.svgData = raw.decode(Config.encoding, errors = "ignore")
       else:
         self.svgData = raw
         self._svg_bytes = raw.encode(Config.encoding)
@@ -571,19 +571,22 @@ class SvgDrawing:
         except Exception as exc:
           Log.error("Unable to load PNG texture '%s': %s", svgData, exc)
       elif extension == ".svg":
+        fallback = os.path.splitext(svgData)[0] + ".png"
+        if os.path.exists(fallback):
+          Log.debug("Loading cached bitmap '%s' as fallback for '%s'.", fallback, svgData)
+          self._load_png_texture(fallback)
         try:
-          with open(svgData, 'r', encoding=Config.encoding) as handle:
-            self.svgData = handle.read()
-          self._svg_bytes = self.svgData.encode(Config.encoding)
+          with open(svgData, 'rb') as handle:
+            self._svg_bytes = handle.read()
+          self.svgData = self._svg_bytes.decode(Config.encoding, errors = "replace")
         except Exception as exc:
           Log.error("Failed to read SVG file '%s': %s", svgData, exc)
         else:
           if not self._render_svg_to_texture():
-            fallback = os.path.splitext(svgData)[0] + ".png"
-            if os.path.exists(fallback):
-              Log.debug("Loading cached bitmap '%s' instead of '%s'.", fallback, svgData)
+            if not self.texture and os.path.exists(fallback):
+              Log.debug("Falling back to cached bitmap '%s' for '%s'.", fallback, svgData)
               self._load_png_texture(fallback)
-            else:
+            elif not self.texture:
               Log.warn("Unable to render SVG '%s' and no PNG fallback was found.", svgData)
       else:
         try:
@@ -614,7 +617,15 @@ class SvgDrawing:
       return False
 
     try:
-      png_bytes = svg2png(bytestring = self._svg_bytes, output_width = width, output_height = height)
+      render_kwargs = {}
+      if width:
+        render_kwargs["output_width"] = width
+      if height:
+        render_kwargs["output_height"] = height
+      if self._svg_source and os.path.isfile(self._svg_source):
+        png_bytes = svg2png(url = self._svg_source, **render_kwargs)
+      else:
+        png_bytes = svg2png(bytestring = self._svg_bytes, **render_kwargs)
       image = Image.open(BytesIO(png_bytes)).convert("RGBA")
       if not self.texture:
         self.texture = Texture()
