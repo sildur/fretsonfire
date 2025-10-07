@@ -163,14 +163,14 @@ jobs:
               const normalizedBase = uploadsBaseUrl.replace(/\/$/, '');
               const uploadEndpoint = `${normalizedBase}/repos/${owner}/${repo}/issues/comments/${comment.id}/attachments`;
 
+              const { Blob } = require('node:buffer');
+
               const form = new FormData();
               form.append('name', attachmentName);
               form.append('size', String(previewSize));
               form.append('content_type', 'image/jpeg');
-              form.append('file', fileContent, {
-                filename: attachmentName,
-                contentType: 'application/octet-stream',
-              });
+              const blob = new Blob([fileContent], { type: 'image/jpeg' });
+              form.append('file', blob, attachmentName);
 
               const response = await fetch(uploadEndpoint, {
                 method: 'POST',
