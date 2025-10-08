@@ -1,22 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="1496.2207"
+   height="437.51797"
    id="svg3249"
    sodipodi:version="0.32"
-   inkscape:version="0.44+devel"
-   sodipodi:docbase="D:\FretsonFire\FretsOnFire-svn\trunk\data"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
    sodipodi:docname="stage_background.svg"
-   inkscape:output_extension="org.inkscape.output.svg.inkscape">
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   version="1.1"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs3251">
     <linearGradient
@@ -39,7 +40,7 @@
        fx="471.62656"
        fy="796.53448"
        r="1439.6364"
-       gradientTransform="matrix(0.5453846,-1.9918704e-3,1.7033857e-4,3.4862526e-2,-257.48666,22.895869)"
+       gradientTransform="matrix(0.5453846,-0.00199187,1.7033857e-4,0.03486253,-257.48666,22.895869)"
        gradientUnits="userSpaceOnUse" />
   </defs>
   <sodipodi:namedview
@@ -52,15 +53,19 @@
      objecttolerance="10"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.9899495"
-     inkscape:cx="-126.31971"
-     inkscape:cy="1138.0201"
+     inkscape:zoom="0.35"
+     inkscape:cx="605.71428"
+     inkscape:cy="245.71428"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:window-width="1280"
      inkscape:window-height="979"
      inkscape:window-x="0"
-     inkscape:window-y="14" />
+     inkscape:window-y="14"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata3254">
     <rdf:RDF>
@@ -76,24 +81,25 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(721.3018,186.88456)">
     <path
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2.04299998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
-       d="M -328.33071,-186.88456 L 375.28282,-186.88456 L 375.28282,-4.0070256 L -328.33071,-4.0070256 L -328.33071,-186.88456 z"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2.043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;marker-start:none;marker-mid:none;marker-end:none"
+       d="M -328.33071,-186.88456 H 375.28282 V -4.0070256 h -703.61353 z"
        id="rect3182"
        inkscape:export-filename="H:\new\rect2273.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path
-       style="color:#000000;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2.04299998;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
-       d="M -328.18982,67.755891 L 375.42373,67.755891 L 375.42373,250.6334 L -328.18982,250.6334 L -328.18982,67.755891 z"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:2.043;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;marker-start:none;marker-mid:none;marker-end:none"
+       d="M -328.18982,67.755891 H 375.42373 V 250.6334 h -703.61355 z"
        id="path4041"
        inkscape:export-filename="H:\new\rect2273.png"
        inkscape:export-xdpi="90"
        inkscape:export-ydpi="90" />
     <path
-       style="color:#000000;fill:url(#radialGradient3019);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;marker:none;marker-start:none;marker-mid:none;marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;visibility:visible;display:inline;overflow:visible"
-       d="M 2.5195983,100.64266 C -502.67398,100.26774 -1334.1484,-19.992214 -1.5778397,-19.992214 C 1455.5191,-19.992214 507.77816,101.01762 2.5195983,100.64266 z"
+       style="color:#000000;display:inline;overflow:visible;visibility:visible;fill:url(#radialGradient3019);fill-opacity:1;fill-rule:nonzero;stroke:none;stroke-width:20;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker:none;marker-start:none;marker-mid:none;marker-end:none"
+       d="M 2.5195983,100.64266 C -502.67398,100.26774 -1334.1484,-19.992214 -1.5778397,-19.992214 c 1457.0969397,0 509.3559997,121.009834 4.097438,120.634874 z"
        id="path3188"
        sodipodi:nodetypes="css"
        inkscape:export-filename="H:\new\rect2273.png"
@@ -104,5 +110,6 @@
      inkscape:groupmode="layer"
      id="layer2"
      inkscape:label="rummut"
-     style="display:inline" />
+     style="display:inline"
+     transform="translate(721.3018,186.88456)" />
 </svg>

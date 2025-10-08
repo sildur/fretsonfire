@@ -1,21 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
+
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://web.resource.org/cc/"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://inkscape.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="744.09448819"
-   height="1052.3622047"
+   width="526.42859"
+   height="237.14287"
    id="svg2"
    sodipodi:version="0.32"
-   inkscape:version="0.42+0.43pre1"
-   sodipodi:docbase="c:\users\proj\keyboardhero\data"
-   sodipodi:docname="star.svg">
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   sodipodi:docname="star.svg"
+   version="1.1"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <defs
      id="defs4">
     <linearGradient
@@ -68,7 +69,7 @@
        xlink:href="#linearGradient3057"
        id="radialGradient4847"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(1.000000,0.000000,0.000000,0.957959,0.000000,0.481959)"
+       gradientTransform="matrix(1,0,0,0.957959,0,0.481959)"
        cx="-39.530849"
        cy="57.693279"
        fx="-39.530849"
@@ -101,14 +102,18 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.4"
-     inkscape:cx="375"
-     inkscape:cy="810.4141"
+     inkscape:cx="328.57143"
+     inkscape:cy="28.571429"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      inkscape:window-width="1400"
      inkscape:window-height="1031"
-     inkscape:window-x="-4"
-     inkscape:window-y="-4" />
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
     <rdf:RDF>
@@ -123,10 +128,11 @@
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
-     id="layer1">
+     id="layer1"
+     transform="translate(-46.285713,-60.076466)">
     <path
        sodipodi:type="star"
-       style="fill:url(#linearGradient4881);fill-opacity:1.0;stroke:#aeaeae;stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.48876405;stroke-linejoin:round"
+       style="fill:url(#linearGradient4881);fill-opacity:1;stroke:#aeaeae;stroke-width:20;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:0.488764"
        id="path1307"
        sodipodi:sides="5"
        sodipodi:cx="0"
@@ -138,8 +144,8 @@
        inkscape:flatsided="false"
        inkscape:rounded="0"
        inkscape:randomized="0"
-       d="M 24.6,35.162182 L 1.5182044,102.35066 L -23.592836,35.89393 L -94.625539,34.704218 L -39.181174,-9.7140581 L -60.000004,-77.637815 L -0.6224617,-38.633092 L 57.543498,-79.422571 L 38.796472,-10.898051 L 95.563841,31.816422 L 24.6,35.162182 z "
-       transform="matrix(1.000000,0.000000,0.000000,-1.000000,160.0000,197.1429)"
+       d="M 24.6,35.162182 1.5182044,102.35066 -23.592836,35.89393 -94.625539,34.704218 -39.181174,-9.7140581 -60.000004,-77.637815 -0.6224617,-38.633092 57.543498,-79.422571 38.796472,-10.898051 95.563841,31.816422 Z"
+       transform="matrix(1,0,0,-1,160,197.1429)"
        inkscape:export-filename="c:\users\proj\keyboardhero\data\star1.png"
        inkscape:export-xdpi="51.363052"
        inkscape:export-ydpi="51.363052" />
@@ -155,7 +161,7 @@
        inkscape:export-ydpi="51.363052" />
     <path
        sodipodi:type="star"
-       style="fill:url(#radialGradient4847);fill-opacity:1;stroke:url(#linearGradient4889);stroke-width:20;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;stroke-linejoin:round;fill-rule:nonzero"
+       style="fill:url(#radialGradient4847);fill-opacity:1;fill-rule:nonzero;stroke:url(#linearGradient4889);stroke-width:20;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path2182"
        sodipodi:sides="5"
        sodipodi:cx="0"
@@ -167,8 +173,8 @@
        inkscape:flatsided="false"
        inkscape:rounded="0"
        inkscape:randomized="0"
-       d="M 24.6,35.162182 L 1.5182044,102.35066 L -23.592836,35.89393 L -94.625539,34.704218 L -39.181174,-9.7140581 L -60.000004,-77.637815 L -0.6224617,-38.633092 L 57.543498,-79.422571 L 38.796472,-10.898051 L 95.563841,31.816422 L 24.6,35.162182 z "
-       transform="matrix(1.000000,0.000000,0.000000,-1.000000,460.9595,181.8262)"
+       d="M 24.6,35.162182 1.5182044,102.35066 -23.592836,35.89393 -94.625539,34.704218 -39.181174,-9.7140581 -60.000004,-77.637815 -0.6224617,-38.633092 57.543498,-79.422571 38.796472,-10.898051 95.563841,31.816422 Z"
+       transform="matrix(1,0,0,-1,460.9595,181.8262)"
        inkscape:export-filename="c:\users\proj\keyboardhero\data\star2.png"
        inkscape:export-xdpi="51.363052"
        inkscape:export-ydpi="51.363052" />
