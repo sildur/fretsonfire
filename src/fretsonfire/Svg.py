@@ -19,672 +19,282 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import os
-import re
-from io import BytesIO
-from math import sin, cos
-from xml import sax
+from __future__ import annotations
 
-from OpenGL.GL import *
-from PIL import Image
-from numpy import reshape, dot, transpose, identity, zeros, float32
+import math
+import os
+from io import BytesIO
+from typing import Dict, Iterable, Optional, Tuple
 
 import cairosvg
+from OpenGL.GL import (
+  GL_COLOR_BUFFER_BIT,
+  GL_COLOR_MATERIAL,
+  GL_CURRENT_BIT,
+  GL_DEPTH_BUFFER_BIT,
+  GL_ENABLE_BIT,
+  GL_MODELVIEW,
+  GL_POLYGON_BIT,
+  GL_PROJECTION,
+  GL_STENCIL_BUFFER_BIT,
+  GL_TEXTURE_2D,
+  GL_TEXTURE_BIT,
+  GL_TRANSFORM_BIT,
+  GL_TRIANGLE_STRIP,
+  glBegin,
+  glClear,
+  glClearColor,
+  glColor4f,
+  glDisable,
+  glEnable,
+  glEnd,
+  glLoadIdentity,
+  glMatrixMode,
+  glMultMatrixf,
+  glOrtho,
+  glPopAttrib,
+  glPopMatrix,
+  glPushAttrib,
+  glPushMatrix,
+  glScalef,
+  glTexCoord2f,
+  glTranslatef,
+  glVertex2f,
+  glDepthMask,
+)
+from PIL import Image
+from numpy import dot, identity
+from numpy import float32 as np_float32
 
-from . import Log
-from . import Config
-from .Texture import Texture, TextureException
+from . import Config, Log
+from .Texture import Texture
 
-# Amanith support is now deprecated
-#try:
-#  import amanith
-#  import SvgColors
-#  haveAmanith    = True
-#except ImportError:
-#  Log.warn("PyAmanith not found, SVG support disabled.")
-#  import DummyAmanith as amanith
-#  haveAmanith    = False
-from . import DummyAmanith as amanith
-haveAmanith = True
+Config.define("opengl", "svgshaders", bool, False, text = "Use OpenGL SVG shaders", options = {False: "No", True: "Yes"})
 
-# Add support for 'foo in attributes' syntax
-if not hasattr(sax.xmlreader.AttributesImpl, '__contains__'):
-  sax.xmlreader.AttributesImpl.__contains__ = sax.xmlreader.AttributesImpl.has_key
+LOW_QUALITY = 0
+NORMAL_QUALITY = 1
+HIGH_QUALITY = 2
 
-#
-#  Bugs and limitations:
-#
-#  - only the translate() and matrix() transforms are supported
-#  - only paths are supported
-#  - only constant color, linear gradient and radial gradient fill supported
-#
+_VectorSize = Tuple[int, int]
 
-Config.define("opengl",  "svgshaders",   bool,  False, text = "Use OpenGL SVG shaders",   options = {False: "No", True: "Yes"})
 
-LOW_QUALITY    = amanith.G_LOW_RENDERING_QUALITY
-NORMAL_QUALITY = amanith.G_NORMAL_RENDERING_QUALITY
-HIGH_QUALITY   = amanith.G_HIGH_RENDERING_QUALITY
+def _matrix_to_gl_array(matrix) -> Iterable[float]:
+  """Convert a 3x3 transform matrix into a column-major 4x4 array."""
+  return [
+    matrix[0, 0], matrix[1, 0], 0.0, 0.0,
+    matrix[0, 1], matrix[1, 1], 0.0, 0.0,
+    0.0,          0.0,          1.0, 0.0,
+    matrix[0, 2], matrix[1, 2], 0.0, 1.0,
+  ]
 
-class SvgGradient:
-  def __init__(self, gradientDesc, transform):
-    self.gradientDesc = gradientDesc
-    self.transform = transform
 
-  def applyTransform(self, transform):
-    m = dot(transform.matrix, self.transform.matrix)
-    self.gradientDesc.SetMatrix(transform.getGMatrix(m))
+class SvgTransform:
+  def __init__(self, baseTransform: Optional["SvgTransform"] = None):
+    self.matrix = identity(3, np_float32)
+    if baseTransform:
+      self.matrix = baseTransform.matrix.copy()
+
+  def transform(self, other: "SvgTransform"):
+    self.matrix = dot(self.matrix, other.matrix)
+
+  def reset(self):
+    self.matrix = identity(3, np_float32)
+
+  def translate(self, dx: float, dy: float):
+    self.matrix[0, 2] += dx
+    self.matrix[1, 2] += dy
+
+  def rotate(self, angle: float):
+    s = math.sin(angle)
+    c = math.cos(angle)
+    rotation = identity(3, np_float32)
+    rotation[0, 0] =  c
+    rotation[0, 1] = -s
+    rotation[1, 0] =  s
+    rotation[1, 1] =  c
+    self.matrix = dot(self.matrix, rotation)
+
+  def scale(self, sx: float, sy: float):
+    scaling = identity(3, np_float32)
+    scaling[0, 0] = sx
+    scaling[1, 1] = sy
+    self.matrix = dot(self.matrix, scaling)
+
+  def applyGL(self):
+    glMultMatrixf(_matrix_to_gl_array(self.matrix))
+
 
 class SvgContext:
   def __init__(self, geometry):
-    self.kernel = amanith.GKernel()
     self.geometry = geometry
-    self.drawBoard = amanith.GOpenGLBoard(geometry[0], geometry[0] + geometry[2],
-                                          geometry[1], geometry[1] + geometry[3])
-    self.drawBoard.SetShadersEnabled(Config.get("opengl", "svgshaders"))
     self.transform = SvgTransform()
+    self._quality = NORMAL_QUALITY
     self.setGeometry(geometry)
     self.setProjection(geometry)
-  
-    # eat any possible OpenGL errors -- we can't handle them anyway
-    try:
-      glMatrixMode(GL_MODELVIEW)
-    except:
-      Log.warn("SVG renderer initialization failed; expect corrupted graphics. " +
-               "To fix this, upgrade your OpenGL drivers and set your display " +
-               "to 32 bit color precision.")
 
   def setGeometry(self, geometry = None):
-    self.drawBoard.SetViewport(geometry[0], geometry[1],
-                               geometry[2], geometry[3])
+    geometry = geometry or self.geometry
+    self.geometry = geometry
     self.transform.reset()
     self.transform.scale(geometry[2] / 640.0, geometry[3] / 480.0)
 
   def setProjection(self, geometry = None):
     geometry = geometry or self.geometry
-    self.drawBoard.SetProjection(geometry[0], geometry[0] + geometry[2],
-                                 geometry[1], geometry[1] + geometry[3])
     self.geometry = geometry
+    glMatrixMode(GL_PROJECTION)
+    glLoadIdentity()
+    left, top, width, height = geometry
+    glOrtho(left, left + width, top + height, top, -100, 100)
+    glMatrixMode(GL_MODELVIEW)
 
   def setRenderingQuality(self, quality):
-    # Ignored
-    pass
-    #if quality == LOW_QUALITY:
-    #  q = amanith.G_LOW_RENDERING_QUALITY
-    #elif quality == NORMAL_QUALITY:
-    #  q = amanith.G_NORMAL_RENDERING_QUALITY
-    #elif quality == HIGH_QUALITY:
-    #  q = amanith.G_HIGH_RENDERING_QUALITY
-    #else:
-    #  raise RaiseValueError("Bad rendering quality.")
-    #self.drawBoard.SetRenderingQuality(q)
+    self._quality = quality
 
   def getRenderingQuality(self):
-    q = self.drawBoard.RenderingQuality()
-    if q == amanith.G_LOW_RENDERING_QUALITY:
-      return LOW_QUALITY
-    elif q == amanith.G_NORMAL_RENDERING_QUALITY:
-      return NORMAL_QUALITY
-    return HIGH_QUALITY
+    return self._quality
 
   def clear(self, r = 0, g = 0, b = 0, a = 0):
-    self.drawBoard.Clear(r, g, b, a)
+    glDepthMask(1)
+    glEnable(GL_COLOR_MATERIAL)
+    glClearColor(r, g, b, a)
+    glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
 
-class SvgRenderStyle:
-  def __init__(self, baseStyle = None):
-    self.strokeColor = None
-    self.strokeWidth = None
-    self.fillColor = None
-    self.strokeLineJoin = None
-    self.strokeOpacity = None
-    self.fillOpacity = None
-    
-    if baseStyle:
-      self.__dict__.update(baseStyle.__dict__)
-
-  def parseStyle(self, style):
-    s = {}
-    for m in re.finditer(r"(.+?):\s*(.+?)(;|$)\s*", style):
-      s[m.group(1)] = m.group(2)
-    return s
-
-  def parseColor(self, color, defs = None):
-    if color.lower() == "none":
-      return None
-
-    try:
-      return SvgColors.colors[color.lower()]
-    except KeyError:
-      pass
-      
-    if color[0] == "#":
-      color = color[1:]
-      if len(color) == 3:
-        return (int(color[0], 16) / 15.0, int(color[1], 16) / 15.0, int(color[2], 16) / 15.0, 1.0)
-      return (int(color[0:2], 16) / 255.0, int(color[2:4], 16) / 255.0, int(color[4:6], 16) / 255.0, 1.0)
-    else:
-      if not defs:
-        Log.warn("No patterns or gradients defined.")
-        return None
-      m = re.match(r"url\(#(.+)\)", color)
-      if m:
-        id = m.group(1)
-        if not id in defs:
-          Log.warn("Pattern/gradient %s has not been defined." % id)
-        return defs.get(id)
-
-  def __cmp__(self, s):
-    if s:
-      for k, v in self.__dict__.items():
-        if v != getattr(s, k):
-          return 1
-      return 0
-    return 1
-
-  def __repr__(self):
-    return "<SvgRenderStyle " + " ".join(["%s:%s" % (k, v) for k, v in self.__dict__.items()]) + ">"
-
-  def applyAttributes(self, attrs, defs):
-    style = attrs.get("style")
-    if style:
-      style = self.parseStyle(style)
-      #print style
-      if "stroke" in style:
-        self.strokeColor = self.parseColor(style["stroke"], defs)
-      if "fill" in style:
-        self.fillColor = self.parseColor(style["fill"], defs)
-      if "stroke-width" in style:
-        self.strokeWidth = float(style["stroke-width"].replace("px", ""))
-      if "stroke-opacity" in style:
-        self.strokeOpacity = float(style["stroke-opacity"])
-      if "fill-opacity" in style:
-        self.fillOpacity = float(style["fill-opacity"])
-      if "stroke-linejoin" in style:
-        j = style["stroke-linejoin"].lower()
-        if j == "miter":
-          self.strokeLineJoin = amanith.G_MITER_JOIN
-        elif j == "round":
-          self.strokeLineJoin = amanith.G_ROUND_JOIN
-        elif j == "bevel":
-          self.strokeLineJoin = amanith.G_BEVEL_JOIN
-
-  def apply(self, drawBoard, transform):
-    if self.strokeColor is not None:
-      if isinstance(self.strokeColor, SvgGradient):
-        self.strokeColor.applyTransform(transform)
-        drawBoard.SetStrokePaintType(amanith.G_GRADIENT_PAINT_TYPE)
-        drawBoard.SetStrokeGradient(self.strokeColor.gradientDesc)
-      else:
-        drawBoard.SetStrokePaintType(amanith.G_COLOR_PAINT_TYPE)
-        drawBoard.SetStrokeColor(*self.strokeColor)
-      drawBoard.SetStrokeEnabled(True)
-    else:
-      drawBoard.SetStrokeEnabled(False)
-    
-    if self.fillColor is not None:
-      if isinstance(self.fillColor, SvgGradient):
-        self.fillColor.applyTransform(transform)
-        drawBoard.SetFillPaintType(amanith.G_GRADIENT_PAINT_TYPE)
-        drawBoard.SetFillGradient(self.fillColor.gradientDesc)
-      else:
-        drawBoard.SetFillPaintType(amanith.G_COLOR_PAINT_TYPE)
-        drawBoard.SetFillColor(*self.fillColor)
-      drawBoard.SetFillEnabled(True)
-    else:
-      drawBoard.SetFillEnabled(False)
-
-    if self.strokeWidth is not None:
-      drawBoard.SetStrokeWidth(self.strokeWidth)
-    
-    if self.strokeOpacity is not None:
-      drawBoard.SetStrokeOpacity(self.strokeOpacity)
-      
-    if self.fillOpacity is not None:
-      drawBoard.SetFillOpacity(self.fillOpacity)
-
-    if self.strokeLineJoin is not None:
-      drawBoard.SetStrokeJoinStyle(self.strokeLineJoin)
-
-class SvgTransform:
-  def __init__(self, baseTransform = None):
-    self._gmatrix = amanith.GMatrix33()
-    self.reset()
-    
-    if baseTransform:
-      self.matrix = baseTransform.matrix.copy()
-
-  def applyAttributes(self, attrs, key = "transform"):
-    transform = attrs.get(key)
-    if transform:
-      m = re.match(r"translate\(\s*(.+?)\s*,(.+?)\s*\)", transform)
-      if m:
-        dx, dy = [float(c) for c in m.groups()]
-        self.matrix[0, 2] += dx
-        self.matrix[1, 2] += dy
-      m = re.match(r"matrix\(\s*" + r"\s*,\s*".join(["(.+?)"] * 6) + r"\s*\)", transform)
-      if m:
-        e = [float(c) for c in m.groups()]
-        e = [e[0], e[2], e[4], e[1], e[3], e[5], 0, 0, 1]
-        m = reshape(e, (3, 3))
-        self.matrix = dot(self.matrix, m)
-
-  def transform(self, transform):
-    self.matrix = dot(self.matrix, transform.matrix)
-
-  def reset(self):
-    self.matrix = identity(3, float32)
-
-  def translate(self, dx, dy):
-    m = zeros((3, 3))
-    m[0, 2] = dx
-    m[1, 2] = dy
-    self.matrix += m
-
-  def rotate(self, angle):
-    m = identity(3, float32)
-    s = sin(angle)
-    c = cos(angle)
-    m[0, 0] =  c
-    m[0, 1] = -s
-    m[1, 0] =  s
-    m[1, 1] =  c
-    self.matrix = dot(self.matrix, m)
-
-  def scale(self, sx, sy):
-    m = identity(3, float32)
-    m[0, 0] = sx
-    m[1, 1] = sy
-    self.matrix = dot(self.matrix, m)
-
-  def applyGL(self):
-    # Interpret the 2D matrix as 3D
-    m = self.matrix
-    m = [m[0, 0], m[1, 0], 0.0, 0.0,
-         m[0, 1], m[1, 1], 0.0, 0.0,
-             0.0,     0.0, 1.0, 0.0,
-         m[0, 2], m[1, 2], 0.0, 1.0]
-    glMultMatrixf(m)
-
-  def getGMatrix(self, m):
-    f = float
-    self._gmatrix.Set( \
-      f(m[0, 0]), f(m[0, 1]), f(m[0, 2]), \
-      f(m[1, 0]), f(m[1, 1]), f(m[1, 2]), \
-      f(m[2, 0]), f(m[2, 1]), f(m[2, 2]))
-    return self._gmatrix
-
-  def apply(self, drawBoard):
-    drawBoard.SetModelViewMatrix(self.getGMatrix(self.matrix))
-
-class SvgHandler(sax.ContentHandler):
-  def __init__(self, drawBoard, cache):
-    self.drawBoard = drawBoard
-    self.styleStack = [SvgRenderStyle()]
-    self.contextStack = [None]
-    self.transformStack = [SvgTransform()]
-    self.defs = {}
-    self.cache = cache
-  
-  def startElement(self, name, attrs):
-    style = SvgRenderStyle(self.style())
-    style.applyAttributes(attrs, self.defs)
-    self.styleStack.append(style)
-    
-    transform = SvgTransform(self.transform())
-    transform.applyAttributes(attrs)
-    self.transformStack.append(transform)
-    
-    try:
-      f = "start" + name.capitalize()
-      #print f, self.transformStack
-      #print len(self.styleStack)
-      f = getattr(self, f)
-    except AttributeError:
-      return
-    f(attrs)
-
-  def endElement(self, name):
-    try:
-      f = "end" + name.capitalize()
-      #print f, self.contextStack
-      getattr(self, f)()
-    except AttributeError:
-      pass
-    self.styleStack.pop()
-    self.transformStack.pop()
-
-  def startG(self, attrs):
-    self.contextStack.append("g")
-
-  def endG(self):
-    self.contextStack.pop()
-
-  def startDefs(self, attrs):
-    self.contextStack.append("defs")
-
-  def endDefs(self):
-    self.contextStack.pop()
-
-  def startMarker(self, attrs):
-    self.contextStack.append("marker")
-
-  def endMarker(self):
-    self.contextStack.pop()
-
-  def context(self):
-    return self.contextStack[-1]
-
-  def style(self):
-    return self.styleStack[-1]
-
-  def transform(self):
-    return self.transformStack[-1]
-
-  def startPath(self, attrs):
-    if self.context() in ["g", None]:
-      if "d" in attrs:
-        self.style().apply(self.drawBoard, self.transform())
-        self.transform().apply(self.drawBoard)
-        d = str(attrs["d"])
-        self.cache.addStroke(self.style(), self.transform(), self.drawBoard.DrawPaths(d))
-
-  def createLinearGradient(self, attrs, keys):
-    a = dict(attrs)
-    if not "x1" in a or not "x2" in a or not "y1" in a or not "y2" in a:
-      a["x1"] = a["y1"] = 0.0
-      a["x2"] = a["y2"] = 1.0
-    if "id" in a and "x1" in a and "x2" in a and "y1" in a and "y2" in a:
-      transform = SvgTransform()
-      if "gradientTransform" in a:
-        transform.applyAttributes(a, key = "gradientTransform")
-      x1, y1, x2, y2 = [float(a[k]) for k in ["x1", "y1", "x2", "y2"]]
-      return a["id"], self.drawBoard.CreateLinearGradient((x1, y1), (x2, y2), keys), transform
-    return None, None, None
-
-  def createRadialGradient(self, attrs, keys):
-    a = dict(attrs)
-    if not "cx" in a or not "cy" in a or not "fx" in a or not "fy" in a:
-      a["cx"] = a["cy"] = 0.0
-      a["fx"] = a["fy"] = 1.0
-    if "id" in a and "cx" in a and "cy" in a and "fx" in a and "fy" in a and "r" in a:
-      transform = SvgTransform()
-      if "gradientTransform" in a:
-        transform.applyAttributes(a, key = "gradientTransform")
-      cx, cy, fx, fy, r = [float(a[k]) for k in ["cx", "cy", "fx", "fy", "r"]]
-      return a["id"], self.drawBoard.CreateRadialGradient((cx, cy), (fx, fy), r, keys), transform
-    return None, None, None
-
-  def startLineargradient(self, attrs):
-    if self.context() == "defs":
-      if "xlink:href" in attrs:
-        id = attrs["xlink:href"][1:]
-        if not id in self.defs:
-          Log.warn("Linear gradient %s has not been defined." % id)
-        else:
-          keys = self.defs[id].gradientDesc.ColorKeys()
-          id, grad, trans = self.createLinearGradient(attrs, keys)
-          self.defs[id] = SvgGradient(grad, trans)
-      else:
-        self.contextStack.append("gradient")
-        self.stops = []
-        self.gradientAttrs = attrs
-    
-  def startRadialgradient(self, attrs):
-    if self.context() == "defs":
-      if "xlink:href" in attrs:
-        id = attrs["xlink:href"][1:]
-        if not id in self.defs:
-          Log.warn("Radial gradient %s has not been defined." % id)
-        else:
-          keys = self.defs[id].gradientDesc.ColorKeys()
-          id, grad, trans = self.createRadialGradient(attrs, keys)
-          self.defs[id] = SvgGradient(grad, trans)
-      else:
-        self.contextStack.append("gradient")
-        self.stops = []
-        self.gradientAttrs = attrs
-
-  def parseKeys(self, stops):
-    keys = []
-    for stop in self.stops:
-      color, opacity, offset = None, None, None
-      if "style" in stop:
-        style =  self.style().parseStyle(stop["style"])
-        if "stop-color" in style:
-          color = self.style().parseColor(style["stop-color"])
-        if "stop-opacity" in style:
-          opacity = float(style["stop-opacity"])
-      if "offset" in stop:
-        offset = float(stop["offset"])
-      if offset is not None and (color is not None or opacity is not None):
-        if opacity is None: opacity = 1.0
-        k = amanith.GKeyValue(offset, (color[0], color[1], color[2], opacity))
-        keys.append(k)
-    return keys
-    
-  def endLineargradient(self):
-    if self.context() == "gradient":
-      keys = self.parseKeys(self.stops)
-      id, grad, trans = self.createLinearGradient(self.gradientAttrs, keys)
-      del self.stops
-      del self.gradientAttrs
-      if id and grad:
-        self.defs[id] = SvgGradient(grad, trans)
-      self.contextStack.pop()
-    
-  def endRadialgradient(self):
-    if self.context() == "gradient":
-      keys = self.parseKeys(self.stops)
-      id, grad, trans = self.createRadialGradient(self.gradientAttrs, keys)
-      del self.stops
-      del self.gradientAttrs
-      if id and grad:
-        self.defs[id] = SvgGradient(grad, trans)
-      self.contextStack.pop()
-    
-  def startStop(self, attrs):
-    if self.context() == "gradient":
-      self.stops.append(attrs)
-    
-class SvgCache:
-  def __init__(self, drawBoard):
-    self.drawBoard = drawBoard
-    self.displayList = []
-    self.transforms = {}
-    self.bank = drawBoard.CreateCacheBank()
-
-  def beginCaching(self):
-    self.drawBoard.SetCacheBank(self.bank)
-    self.drawBoard.SetTargetMode(amanith.G_CACHE_MODE)
-
-  def endCaching(self):
-    self.drawBoard.SetTargetMode(amanith.G_COLOR_MODE)
-    self.drawBoard.SetCacheBank(None)
-
-  def addStroke(self, style, transform, slot):
-    if self.displayList:
-      lastStyle = self.displayList[-1][0]
-    else:
-      lastStyle = None
-
-    self.transforms[slot] = transform
-    
-    if lastStyle == style:
-      lastSlotStart, lastSlotEnd = self.displayList[-1][1][-1]
-      if lastSlotEnd == slot - 1:
-        self.displayList[-1][1][-1] = (lastSlotStart, slot)
-      else:
-        self.displayList[-1][1].append((slot, slot))
-    else:
-      self.displayList.append((style, [(slot, slot)]))
-
-  def draw(self, baseTransform):
-    self.drawBoard.SetCacheBank(self.bank)
-    for style, slotList in self.displayList:
-      transform = SvgTransform(baseTransform)
-      transform.transform(self.transforms[slotList[0][0]])
-      transform.apply(self.drawBoard)
-      style.apply(self.drawBoard, transform)
-      for firstSlot, lastSlot in slotList:
-        self.drawBoard.DrawCacheSlots(firstSlot, lastSlot)
-    self.drawBoard.SetCacheBank(None)
-
-    # eat any possible OpenGL errors -- we can't handle them anyway
-    try:
-      glMatrixMode(GL_MODELVIEW)
-    except:
-      pass
 
 class SvgDrawing:
   def __init__(self, context, svgData):
-    self.svgData = None
-    self.texture = None
     self.context = context
-    self.cache = None
     self.transform = SvgTransform()
-    self._svg_path = None
-    self._svg_bytes = None
-    self._source_label = None
+    self.texture: Optional[Texture] = None
+    self._svg_path: Optional[str] = None
+    self._svg_bytes: Optional[bytes] = None
+    self._source_label: Optional[str] = None
+    self._intrinsic_size: Optional[_VectorSize] = None
+    self._vector_textures: Dict[_VectorSize, Texture] = {}
 
-    # Detect the type of data passed in
-    if hasattr(svgData, 'read'):
+    if hasattr(svgData, "read"):
       data = svgData.read()
       if isinstance(data, str):
         data = data.encode(Config.encoding)
       self._svg_bytes = data
-      self._source_label = getattr(svgData, 'name', None)
-      self.texture = self._render_svg_to_texture()
+      self._source_label = getattr(svgData, "name", None)
+      self._initialize_vector_renderer()
     elif isinstance(svgData, str):
       self._source_label = svgData
       base, ext = os.path.splitext(svgData)
       ext = ext.lower()
       if ext == ".png":
         self.texture = Texture(svgData)
+        self._intrinsic_size = self.texture.pixelSize
       elif ext == ".svg":
         self._svg_path = svgData
-        self.texture = self._render_svg_to_texture()
-        if not self.texture:
+        try:
+          self._initialize_vector_renderer()
+        except Exception as exc:
+          Log.warn("Failed to initialize SVG renderer for '%s': %s" % (svgData, exc))
           bitmapFile = base + ".png"
           if os.path.exists(bitmapFile):
             Log.debug("Loading cached bitmap '%s' instead of '%s'." % (bitmapFile, svgData))
             self.texture = Texture(bitmapFile)
+            self._intrinsic_size = self.texture.pixelSize
+          else:
+            raise
       else:
         self.texture = Texture(svgData)
+        self._intrinsic_size = self.texture.pixelSize
+    else:
+      self.texture = Texture(svgData)
+      self._intrinsic_size = self.texture.pixelSize
 
-    # Make sure we have a valid texture
-    if not self.texture:
-      if isinstance(svgData, str):
-        e = "Unable to load texture for %s." % svgData
-      else:
-        e = "Unable to load texture for SVG file."
-      Log.error(e)
-      raise RuntimeError(e)
+    if not self.texture and not self._intrinsic_size:
+      raise RuntimeError("Unable to load SVG resource: %r" % (svgData,))
 
-  def _load_svg_texture(self, svg_path = None, svg_bytes = None, output_size = None):
-    kwargs = {}
-    if output_size:
-      kwargs["output_width"], kwargs["output_height"] = output_size
+  def _initialize_vector_renderer(self):
+    image = self._render_svg_image()
+    self._intrinsic_size = image.size
+    self._vector_textures[image.size] = self._image_to_texture(image)
 
-    try:
-      if svg_path:
-        png_data = cairosvg.svg2png(url = svg_path, **kwargs)
-      else:
-        png_data = cairosvg.svg2png(bytestring = svg_bytes, **kwargs)
-    except Exception as exc:
-      label = svg_path or (self._source_label or "<memory>")
-      Log.warn("Failed to render SVG '%s' with CairoSVG: %s" % (label, exc))
-      return None
-
-    try:
-      image = Image.open(BytesIO(png_data))
-      image = image.convert("RGBA")
-    except Exception as exc:
-      label = svg_path or (self._source_label or "<memory>")
-      Log.warn("Failed to decode rendered SVG '%s': %s" % (label, exc))
-      return None
-
+  def _image_to_texture(self, image: Image.Image) -> Texture:
     texture = Texture()
     texture.loadImage(image)
-    if svg_path:
-      texture.name = svg_path
+    if self._svg_path:
+      texture.name = self._svg_path
     elif self._source_label:
       texture.name = self._source_label
     return texture
 
-  def _render_svg_to_texture(self, output_size = None):
-    if self._svg_path:
-      return self._load_svg_texture(svg_path = self._svg_path, output_size = output_size)
-    if self._svg_bytes is not None:
-      return self._load_svg_texture(svg_bytes = self._svg_bytes, output_size = output_size)
-    return None
+  def _render_svg_image(self, output_size: Optional[_VectorSize] = None) -> Image.Image:
+    kwargs = {}
+    if output_size:
+      width, height = output_size
+      kwargs["output_width"] = max(1, int(width))
+      kwargs["output_height"] = max(1, int(height))
+    try:
+      if self._svg_path:
+        png_data = cairosvg.svg2png(url = self._svg_path, **kwargs)
+      else:
+        png_data = cairosvg.svg2png(bytestring = self._svg_bytes, **kwargs)
+    except Exception as exc:
+      label = self._svg_path or (self._source_label or "<memory>")
+      raise RuntimeError("Failed to render SVG '%s' with CairoSVG: %s" % (label, exc)) from exc
 
-  def _cacheDrawing(self, drawBoard):
-    if self.svgData is None:
-      e = "SVG drawing does not have vector data available for caching."
-      Log.error(e)
-      raise RuntimeError(e)
-    self.cache.beginCaching()
-    parser = sax.make_parser()
-    sax.parseString(self.svgData, SvgHandler(drawBoard, self.cache))
-    self.cache.endCaching()
-    del self.svgData
+    try:
+      image = Image.open(BytesIO(png_data))
+      return image.convert("RGBA")
+    except Exception as exc:
+      label = self._svg_path or (self._source_label or "<memory>")
+      raise RuntimeError("Failed to decode rendered SVG '%s': %s" % (label, exc)) from exc
 
-  def convertToTexture(self, width, height):
-    if self.texture and self.texture.pixelSize == (width, height):
-      return
+  def _render_svg_texture(self, output_size: Optional[_VectorSize] = None) -> Texture:
+    image = self._render_svg_image(output_size = output_size)
+    return self._image_to_texture(image)
 
-    texture = self._render_svg_to_texture(output_size = (width, height))
-    if texture:
-      self.texture = texture
-      return
+  def _get_vector_texture(self, size: _VectorSize) -> Texture:
+    key = (max(1, int(size[0])), max(1, int(size[1])))
+    texture = self._vector_textures.get(key)
+    if texture is None:
+      texture = self._render_svg_texture(output_size = key)
+      self._vector_textures[key] = texture
+    return texture
 
-    if self.texture:
-      return
+  def _normalized_transform_and_size(self, transform: SvgTransform) -> Tuple[SvgTransform, _VectorSize]:
+    if not self._intrinsic_size:
+      raise RuntimeError("SVG drawing does not have intrinsic size information.")
 
-    e = "SVG drawing does not have a valid texture image."
-    Log.error(e)
-    raise RuntimeError(e)
+    matrix = transform.matrix.copy()
+    scale_x = math.hypot(matrix[0, 0], matrix[1, 0])
+    scale_y = math.hypot(matrix[0, 1], matrix[1, 1])
+    scale_x = max(scale_x, 1e-6)
+    scale_y = max(scale_y, 1e-6)
+    matrix[0, 0] /= scale_x
+    matrix[1, 0] /= scale_x
+    matrix[0, 1] /= scale_y
+    matrix[1, 1] /= scale_y
 
-    #try:
-    #  self.texture = Texture()
-    #  self.texture.bind()
-    #  self.texture.prepareRenderTarget(width, height)
-    #  self.texture.setAsRenderTarget()
-    #  quality = self.context.getRenderingQuality()
-    #  self.context.setRenderingQuality(HIGH_QUALITY)
-    #  geometry = self.context.geometry
-    #  self.context.setProjection((0, 0, width, height))
-    #  glViewport(0, 0, width, height)
-    #  self.context.clear()
-    #  transform = SvgTransform()
-    #  transform.translate(width / 2, height / 2)
-    #  self._render(transform)
-    #  self.texture.resetDefaultRenderTarget()
-    #  self.context.setProjection(geometry)
-    #  glViewport(*geometry)
-    #  self.context.setRenderingQuality(quality)
-    #except TextureException, e:
-    #  Log.warn("Unable to convert SVG drawing to texture: %s" % str(e))
+    normalized = SvgTransform()
+    normalized.matrix = matrix
 
-  def _getEffectiveTransform(self):
+    base_w, base_h = self._intrinsic_size
+    target_size = (
+      max(1, int(round(base_w * scale_x))),
+      max(1, int(round(base_h * scale_y))),
+    )
+    return normalized, target_size
+
+  def _getEffectiveTransform(self) -> SvgTransform:
     transform = SvgTransform(self.transform)
     transform.transform(self.context.transform)
     return transform
 
-  def _render(self, transform):
-    glMatrixMode(GL_TEXTURE)
-    glPushMatrix()
-    glMatrixMode(GL_MODELVIEW)
-    
-    glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_STENCIL_BUFFER_BIT | GL_TRANSFORM_BIT | GL_COLOR_BUFFER_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT)
-    if not self.cache:
-      self.cache = SvgCache(self.context.drawBoard)
-      self._cacheDrawing(self.context.drawBoard)
-    self.cache.draw(transform)
-    glPopAttrib()
+  def convertToTexture(self, width: int, height: int):
+    if self.texture and self.texture.pixelSize == (width, height):
+      return
 
-    glMatrixMode(GL_TEXTURE)
-    glPopMatrix()
-    glMatrixMode(GL_MODELVIEW)
+    texture = self._render_svg_texture(output_size = (width, height))
+    if texture:
+      self.texture = texture
+      return
+
+    raise RuntimeError("Unable to convert SVG drawing to texture of size %sx%s." % (width, height))
 
   def draw(self, color = (1, 1, 1, 1)):
     glMatrixMode(GL_TEXTURE)
@@ -699,11 +309,9 @@ class SvgDrawing:
     if self.texture:
       glLoadIdentity()
       transform.applyGL()
-
       glScalef(self.texture.pixelSize[0], self.texture.pixelSize[1], 1)
       glTranslatef(-.5, -.5, 0)
       glColor4f(*color)
-      
       self.texture.bind()
       glEnable(GL_TEXTURE_2D)
       glBegin(GL_TRIANGLE_STRIP)
@@ -718,7 +326,34 @@ class SvgDrawing:
       glEnd()
       glDisable(GL_TEXTURE_2D)
     else:
-      self._render(transform)
+      glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_STENCIL_BUFFER_BIT | GL_TRANSFORM_BIT | GL_COLOR_BUFFER_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT)
+      try:
+        normalized, target_size = self._normalized_transform_and_size(transform)
+        texture = self._get_vector_texture(target_size)
+        glLoadIdentity()
+        normalized.applyGL()
+        glScalef(texture.pixelSize[0], texture.pixelSize[1], 1)
+        glTranslatef(-.5, -.5, 0)
+        glColor4f(*color)
+        texture.bind()
+        glEnable(GL_TEXTURE_2D)
+        glBegin(GL_TRIANGLE_STRIP)
+        glTexCoord2f(0.0, 1.0)
+        glVertex2f(0.0, 1.0)
+        glTexCoord2f(1.0, 1.0)
+        glVertex2f(1.0, 1.0)
+        glTexCoord2f(0.0, 0.0)
+        glVertex2f(0.0, 0.0)
+        glTexCoord2f(1.0, 0.0)
+        glVertex2f(1.0, 0.0)
+        glEnd()
+        glDisable(GL_TEXTURE_2D)
+      except Exception as exc:
+        label = self._svg_path or (self._source_label or "<memory>")
+        Log.error("Unable to render SVG '%s': %s" % (label, exc))
+      finally:
+        glPopAttrib()
+
     glMatrixMode(GL_TEXTURE)
     glPopMatrix()
     glMatrixMode(GL_MODELVIEW)
