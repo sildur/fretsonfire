@@ -19,7 +19,6 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import importlib
 import os
 import re
 from io import BytesIO
@@ -30,15 +29,11 @@ from OpenGL.GL import *
 from PIL import Image
 from numpy import reshape, dot, transpose, identity, zeros, float32
 
+import cairosvg
+
 from . import Log
 from . import Config
 from .Texture import Texture, TextureException
-
-_cairosvg_spec = importlib.util.find_spec("cairosvg")
-if _cairosvg_spec:
-  cairosvg = importlib.import_module("cairosvg")
-else:
-  cairosvg = None
 
 # Amanith support is now deprecated
 #try:
@@ -51,15 +46,6 @@ else:
 #  haveAmanith    = False
 from . import DummyAmanith as amanith
 haveAmanith = True
-
-_cairosvg_warning_logged = False
-
-
-def _warn_missing_cairosvg():
-  global _cairosvg_warning_logged
-  if not _cairosvg_warning_logged:
-    Log.warn("CairoSVG is not available; falling back to prerendered PNGs where possible.")
-    _cairosvg_warning_logged = True
 
 # Add support for 'foo in attributes' syntax
 if not hasattr(sax.xmlreader.AttributesImpl, '__contains__'):
@@ -594,10 +580,6 @@ class SvgDrawing:
       raise RuntimeError(e)
 
   def _load_svg_texture(self, svg_path = None, svg_bytes = None, output_size = None):
-    if not cairosvg:
-      _warn_missing_cairosvg()
-      return None
-
     kwargs = {}
     if output_size:
       kwargs["output_width"], kwargs["output_height"] = output_size
