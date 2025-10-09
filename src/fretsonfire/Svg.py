@@ -31,13 +31,7 @@ from PIL import Image
 from . import Config, Log
 from .Texture import Texture
 
-try:
-  import skia
-except ImportError as exc:  # pragma: no cover - optional dependency
-  skia = None  # type: ignore[assignment]
-  _skia_import_error = exc
-else:
-  _skia_import_error = None
+import skia
 
 # Rendering quality is expressed as an upscaling factor before downsampling.
 LOW_QUALITY = 0
@@ -189,9 +183,6 @@ class SvgDrawing:
       raise RuntimeError("Unsupported SVG input type: %r" % (type(svg_data),))
 
     if svg_bytes is not None:
-      if not skia:
-        Log.error("skia-python is required for SVG rendering but is not available.")
-        raise RuntimeError("skia-python is required for SVG rendering") from _skia_import_error
       self._load_dom(svg_bytes)
 
     if not self.texture and not self._dom:
