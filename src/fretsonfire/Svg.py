@@ -19,16 +19,26 @@
 # MA  02110-1301, USA.                                              #
 #####################################################################
 
-import re
+import importlib
 import os
-from xml import sax
-from OpenGL.GL import *
-from numpy import reshape, dot, transpose, identity, zeros, float32
+import re
+from io import BytesIO
 from math import sin, cos
+from xml import sax
+
+from OpenGL.GL import *
+from PIL import Image
+from numpy import reshape, dot, transpose, identity, zeros, float32
 
 from . import Log
 from . import Config
 from .Texture import Texture, TextureException
+
+_cairosvg_spec = importlib.util.find_spec("cairosvg")
+if _cairosvg_spec:
+  cairosvg = importlib.import_module("cairosvg")
+else:
+  cairosvg = None
 
 # Amanith support is now deprecated
 #try:
@@ -41,6 +51,15 @@ from .Texture import Texture, TextureException
 #  haveAmanith    = False
 from . import DummyAmanith as amanith
 haveAmanith = True
+
+_cairosvg_warning_logged = False
+
+
+def _warn_missing_cairosvg():
+  global _cairosvg_warning_logged
+  if not _cairosvg_warning_logged:
+    Log.warn("CairoSVG is not available; falling back to prerendered PNGs where possible.")
+    _cairosvg_warning_logged = True
 
 # Add support for 'foo in attributes' syntax
 if not hasattr(sax.xmlreader.AttributesImpl, '__contains__'):
@@ -536,26 +555,34 @@ class SvgDrawing:
     self.context = context
     self.cache = None
     self.transform = SvgTransform()
+    self._svg_path = None
+    self._svg_bytes = None
+    self._source_label = None
 
     # Detect the type of data passed in
     if hasattr(svgData, 'read'):
-      self.svgData = svgData.read()
+      data = svgData.read()
+      if isinstance(data, str):
+        data = data.encode(Config.encoding)
+      self._svg_bytes = data
+      self._source_label = getattr(svgData, 'name', None)
+      self.texture = self._render_svg_to_texture()
     elif isinstance(svgData, str):
-      bitmapFile = svgData.replace(".svg", ".png")
-      # Load PNG files directly
-      if svgData.endswith(".png"):
+      self._source_label = svgData
+      base, ext = os.path.splitext(svgData)
+      ext = ext.lower()
+      if ext == ".png":
         self.texture = Texture(svgData)
-      # Check whether we have a prerendered bitmap version of the SVG file
-      elif svgData.endswith(".svg") and os.path.exists(bitmapFile):
-        Log.debug("Loading cached bitmap '%s' instead of '%s'." % (bitmapFile, svgData))
-        self.texture = Texture(bitmapFile)
+      elif ext == ".svg":
+        self._svg_path = svgData
+        self.texture = self._render_svg_to_texture()
+        if not self.texture:
+          bitmapFile = base + ".png"
+          if os.path.exists(bitmapFile):
+            Log.debug("Loading cached bitmap '%s' instead of '%s'." % (bitmapFile, svgData))
+            self.texture = Texture(bitmapFile)
       else:
-        if not haveAmanith:
-          e = "PyAmanith support is deprecated and you are trying to load an SVG file."
-          Log.error(e)
-          raise RuntimeError(e)
-        Log.debug("Loading SVG file '%s'." % (svgData))
-        self.svgData = open(svgData, 'r', encoding=Config.encoding).read()
+        self.texture = Texture(svgData)
 
     # Make sure we have a valid texture
     if not self.texture:
@@ -566,7 +593,53 @@ class SvgDrawing:
       Log.error(e)
       raise RuntimeError(e)
 
+  def _load_svg_texture(self, svg_path = None, svg_bytes = None, output_size = None):
+    if not cairosvg:
+      _warn_missing_cairosvg()
+      return None
+
+    kwargs = {}
+    if output_size:
+      kwargs["output_width"], kwargs["output_height"] = output_size
+
+    try:
+      if svg_path:
+        png_data = cairosvg.svg2png(url = svg_path, **kwargs)
+      else:
+        png_data = cairosvg.svg2png(bytestring = svg_bytes, **kwargs)
+    except Exception as exc:
+      label = svg_path or (self._source_label or "<memory>")
+      Log.warn("Failed to render SVG '%s' with CairoSVG: %s" % (label, exc))
+      return None
+
+    try:
+      image = Image.open(BytesIO(png_data))
+      image = image.convert("RGBA")
+    except Exception as exc:
+      label = svg_path or (self._source_label or "<memory>")
+      Log.warn("Failed to decode rendered SVG '%s': %s" % (label, exc))
+      return None
+
+    texture = Texture()
+    texture.loadImage(image)
+    if svg_path:
+      texture.name = svg_path
+    elif self._source_label:
+      texture.name = self._source_label
+    return texture
+
+  def _render_svg_to_texture(self, output_size = None):
+    if self._svg_path:
+      return self._load_svg_texture(svg_path = self._svg_path, output_size = output_size)
+    if self._svg_bytes is not None:
+      return self._load_svg_texture(svg_bytes = self._svg_bytes, output_size = output_size)
+    return None
+
   def _cacheDrawing(self, drawBoard):
+    if self.svgData is None:
+      e = "SVG drawing does not have vector data available for caching."
+      Log.error(e)
+      raise RuntimeError(e)
     self.cache.beginCaching()
     parser = sax.make_parser()
     sax.parseString(self.svgData, SvgHandler(drawBoard, self.cache))
@@ -574,6 +647,14 @@ class SvgDrawing:
     del self.svgData
 
   def convertToTexture(self, width, height):
+    if self.texture and self.texture.pixelSize == (width, height):
+      return
+
+    texture = self._render_svg_to_texture(output_size = (width, height))
+    if texture:
+      self.texture = texture
+      return
+
     if self.texture:
       return
 
