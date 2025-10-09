@@ -34,6 +34,7 @@ dependencies = [
     "numpy>=1.20",
     "Pillow>=9.0",
     "pyasyncore>=1.0",
+    "skia-python>=87.0",
 ]
 
 [project.optional-dependencies]
