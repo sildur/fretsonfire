@@ -260,29 +260,23 @@ class SvgDrawing:
       self._vector_textures[key] = texture
     return texture
 
-  def _normalized_transform_and_size(self, transform: SvgTransform) -> Tuple[SvgTransform, _VectorSize]:
+  def _scale_factors_and_size(self, transform: SvgTransform) -> Tuple[float, float, _VectorSize]:
     if not self._intrinsic_size:
       raise RuntimeError("SVG drawing does not have intrinsic size information.")
 
-    matrix = transform.matrix.copy()
+    matrix = transform.matrix
     scale_x = math.hypot(matrix[0, 0], matrix[1, 0])
     scale_y = math.hypot(matrix[0, 1], matrix[1, 1])
     scale_x = max(scale_x, 1e-6)
     scale_y = max(scale_y, 1e-6)
-    matrix[0, 0] /= scale_x
-    matrix[1, 0] /= scale_x
-    matrix[0, 1] /= scale_y
-    matrix[1, 1] /= scale_y
-
-    normalized = SvgTransform()
-    normalized.matrix = matrix
 
     base_w, base_h = self._intrinsic_size
     target_size = (
       max(1, int(round(base_w * scale_x))),
       max(1, int(round(base_h * scale_y))),
     )
-    return normalized, target_size
+
+    return scale_x, scale_y, target_size
 
   def _getEffectiveTransform(self) -> SvgTransform:
     transform = SvgTransform(self.transform)
@@ -332,11 +326,15 @@ class SvgDrawing:
     else:
       glPushAttrib(GL_ENABLE_BIT | GL_TEXTURE_BIT | GL_STENCIL_BUFFER_BIT | GL_TRANSFORM_BIT | GL_COLOR_BUFFER_BIT | GL_POLYGON_BIT | GL_CURRENT_BIT | GL_DEPTH_BUFFER_BIT)
       try:
-        normalized, target_size = self._normalized_transform_and_size(transform)
+        scale_x, scale_y, target_size = self._scale_factors_and_size(transform)
         texture = self._get_vector_texture(target_size)
         glLoadIdentity()
-        normalized.applyGL()
-        glScalef(texture.pixelSize[0], texture.pixelSize[1], 1)
+        transform.applyGL()
+        glScalef(
+          texture.pixelSize[0] / scale_x,
+          texture.pixelSize[1] / scale_y,
+          1,
+        )
         glTranslatef(-.5, -.5, 0)
         glColor4f(*color)
         texture.bind()
