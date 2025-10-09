@@ -29,6 +29,7 @@ classifiers = [
     "Topic :: Multimedia :: Graphics",
 ]
 dependencies = [
+    "cairosvg>=2.7",
     "pygame>=2.1",
     "PyOpenGL>=3.1",
     "numpy>=1.20",
@@ -82,6 +83,7 @@ long_description = """Frets on Fire is a game of musical skill and fast fingers.
 sources = ["src/fretsonfire"]
 test_sources = ["tests"]
 requires = [
+    "cairosvg>=2.7",
     "pygame>=2.1",
     "PyOpenGL>=3.1",
     "numpy>=1.20",
