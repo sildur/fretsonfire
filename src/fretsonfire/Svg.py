@@ -216,7 +216,10 @@ class SvgDrawing:
 
   def _image_to_texture(self, image: Image.Image) -> Texture:
     texture = Texture()
-    texture.loadImage(image)
+    # Cairo renders with a top-left origin, while Texture.loadImage expects
+    # data that's already flipped for OpenGL's bottom-left origin. Flip here so
+    # the subsequent loadImage call restores the expected orientation.
+    texture.loadImage(image.transpose(Image.FLIP_TOP_BOTTOM))
     if self._svg_path:
       texture.name = self._svg_path
     elif self._source_label:
