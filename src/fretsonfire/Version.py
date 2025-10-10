@@ -23,7 +23,7 @@ import sys
 import os
 from importlib import resources
 from pathlib import Path
-VERSION = '1.6.0'
+VERSION = '1.6.1'
 
 def appName():
   return "fretsonfire"

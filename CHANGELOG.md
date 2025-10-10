@@ -2,6 +2,14 @@
 
 <!-- version list -->
 
+## v1.6.1 (2025-10-10)
+
+### Bug Fixes
+
+- Fix python version in CI
+  ([`9a1f92f`](https://github.com/sildur/fretsonfire/commit/9a1f92fcc3722d202d885574118bcb01e341d995))
+
+
 ## v1.6.0 (2025-10-10)
 
 ### Bug Fixes
