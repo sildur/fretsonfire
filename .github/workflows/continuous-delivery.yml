@@ -38,10 +38,14 @@ jobs:
       - name: Test | Run pytest
         run: python -m pytest
 
-      - name: Setup | Install X virtual framebuffer
+      - name: Setup | Install X virtual framebuffer and EGL libraries
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb
+          sudo apt-get install -y \
+            xvfb \
+            libegl1 \
+            libgl1 \
+            libgles2
 
       - name: Capture | Gameplay screenshot
         run: |
