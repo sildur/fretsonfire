@@ -2,6 +2,35 @@
 
 <!-- version list -->
 
+## v1.6.0 (2025-10-10)
+
+### Bug Fixes
+
+- Require skia
+  ([`cbb18a0`](https://github.com/sildur/fretsonfire/commit/cbb18a0b36f0727c9e648b153c89a31fdca47ffa))
+
+### Chores
+
+- Fix screenshot taking github action
+  ([`05d63ce`](https://github.com/sildur/fretsonfire/commit/05d63ce4be204f94391e1cab5e12c7ad3fbe6f6e))
+
+- **assets**: Re-export svg data with inkscape 1.4
+  ([`6aa68f1`](https://github.com/sildur/fretsonfire/commit/6aa68f1c6bf9a9231b75e3444bd7675f10181da5))
+
+- **data**: Drop legacy launch scripts and fix file permissions
+  ([`0b1839e`](https://github.com/sildur/fretsonfire/commit/0b1839e12ebb83cb2d8190254f1a9e929b084923))
+
+### Continuous Integration
+
+- Quote PR screenshot release title ([#16](https://github.com/sildur/fretsonfire/pull/16),
+  [`d9b82fc`](https://github.com/sildur/fretsonfire/commit/d9b82fc71049b459736cbdb02202955bcd432936))
+
+### Features
+
+- Restore SVG rendering with skia backend
+  ([`6a8c97d`](https://github.com/sildur/fretsonfire/commit/6a8c97dd65001a344b8fb565e1acdfe247e37136))
+
+
 ## v1.5.8 (2025-10-05)
 
 ### Bug Fixes
