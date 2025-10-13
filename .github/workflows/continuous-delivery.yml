@@ -76,7 +76,7 @@ jobs:
       - name: Notify | Find existing screenshot comment
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && steps.publish_pr_screenshot_release.outcome == 'success'
         id: find_pr_screenshot_comment
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: 'github-actions[bot]'
