@@ -373,11 +373,7 @@ msgid "No songs could be imported, sorry. Check the log files for more informati
 msgstr ""
 
 #: Editor.py:797
-msgid "Ogg Vorbis encoder (oggenc.exe) not found. Please install it to the game directory and try again."
-msgstr ""
-
-#: Editor.py:799
-msgid "Ogg Vorbis encoder (oggenc) not found. Please install it and try again."
+msgid "Ogg Vorbis encoding support is unavailable. Ensure SoundFile and libsndfile include Vorbis support, then try again."
 msgstr ""
 
 #: Editor.py:803

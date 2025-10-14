@@ -38,6 +38,7 @@ from . import Player
 from . import Theme
 from . import Log
 import shutil, os, struct, wave, tempfile
+import soundfile as sf
 from struct import unpack
 
 class Editor(Layer, KeyListener):
@@ -667,12 +668,42 @@ class GHImporter(Layer):
       os.unlink(rhythmWaveFile)
 
   def compressWaveFileToOgg(self, waveFile, oggFile):
-    os.system('oggenc "%s" --resample 44100 -q 6 -o "%s"' % (waveFile, oggFile))
+    Log.notice("Encoding '%s' to '%s' via SoundFile", waveFile, oggFile)
+    try:
+      with sf.SoundFile(waveFile, mode = "r") as source:
+        with sf.SoundFile(
+            oggFile,
+            mode = "w",
+            samplerate = source.samplerate,
+            channels = source.channels,
+            format = "OGG",
+            subtype = "VORBIS",
+        ) as sink:
+          frames_per_chunk = 65536
+          while True:
+            data = source.read(frames_per_chunk, dtype = "float32")
+            if not len(data):
+              break
+            sink.write(data)
+    except Exception as exc:
+      Log.error("SoundFile failed to encode Ogg Vorbis: %s", exc)
+      raise
 
   def isOggEncoderPresent(self):
-    if os.name == "nt":
-      return os.system("oggenc -h > NUL:") == 0
-    return os.system("oggenc > /dev/null 2>&1") == 256
+    try:
+      available_formats = sf.available_formats()
+      if "OGG" not in available_formats:
+        Log.warn("SoundFile does not report OGG format support")
+        return False
+      subtypes = sf.available_subtypes("OGG")
+      if "VORBIS" not in subtypes:
+        Log.warn("SoundFile does not report Ogg Vorbis support")
+        return False
+    except Exception as exc:
+      Log.warn("Unable to query SoundFile capabilities: %s", exc)
+      return False
+
+    return True
 
   def importSongs(self, headerPath, archivePath, workPath):
     try:
@@ -792,10 +823,7 @@ class GHImporter(Layer):
 
     # Check for necessary software
     if not self.isOggEncoderPresent():
-      if os.name == "nt":
-        Dialogs.showMessage(self.engine, _("Ogg Vorbis encoder (oggenc.exe) not found. Please install it to the game directory and try again."))
-      else:
-        Dialogs.showMessage(self.engine, _("Ogg Vorbis encoder (oggenc) not found. Please install it and try again."))
+      Dialogs.showMessage(self.engine, _("Ogg Vorbis encoding support is unavailable. Ensure SoundFile and libsndfile include Vorbis support, then try again."))
       self.engine.view.popLayer(self)
       return
 
