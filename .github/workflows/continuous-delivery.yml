@@ -55,7 +55,7 @@ jobs:
               --output artifacts/gameplay.png
 
       - name: Upload | Gameplay screenshot
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: gameplay-screenshot
           path: artifacts/gameplay.png
@@ -187,7 +187,7 @@ jobs:
 
       - name: Upload | Distribution Artifacts
         if: steps.release.outputs.released == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: distribution-artifacts
           path: dist
@@ -272,7 +272,7 @@ jobs:
             ${{ matrix.briefcase-args }}
 
       - name: Upload | Distribution Artifacts (${{ matrix.target }})
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: distribution-artifacts-${{ matrix.target }}
           path: dist
