@@ -289,7 +289,7 @@ jobs:
 
     steps:
       - name: Setup | Download Desktop Artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: distribution-artifacts-*
           merge-multiple: true
@@ -318,7 +318,7 @@ jobs:
 
     steps:
       - name: Setup | Download Build Artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         id: artifact-download
         with:
           name: distribution-artifacts
