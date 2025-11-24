@@ -23,7 +23,7 @@ jobs:
 
     steps:
       - name: Setup | Checkout Repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Setup | Python
         uses: actions/setup-python@v6
@@ -115,7 +115,7 @@ jobs:
       # possible that the branch was updated while the workflow was running. This
       # prevents accidentally releasing un-evaluated changes.
       - name: Setup | Checkout Repository on Release Branch
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.ref_name }}
           fetch-depth: 0
@@ -235,7 +235,7 @@ jobs:
 
     steps:
       - name: Setup | Checkout Release Tag
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           ref: ${{ needs.release.outputs.tag }}
           fetch-depth: 0
